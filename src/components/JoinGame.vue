@@ -1,19 +1,37 @@
 <template>
-  <v-row justify="center" class="mt-12">
-    <v-col cols="12" sm="8" md="6">
+  <v-card class="mb-4">
+    <v-card-title>Join an Existing Game</v-card-title>
+    <v-card-text>
       <v-text-field
-        label="Enter game code..."
+        v-model="gameCode"
+        label="Enter Game Code"
+        prepend-inner-icon="mdi-key-variant"
         variant="outlined"
       ></v-text-field>
-    </v-col>
-    <v-col cols="auto">
-      <v-btn>Join</v-btn>
-    </v-col>
-  </v-row>
+    </v-card-text>
+    <v-card-actions>
+      <v-btn
+        :disabled="!gameCode.trim()"
+        color="primary"
+        block
+        @click="joinGame"
+      >
+        Join Game
+      </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
-<script>
-export default {
-  name: "JoinGame",
+<script setup>
+import { ref } from 'vue';
+
+const gameCode = ref('');
+
+/**
+ * @description Logs the entered game code to the console.
+ */
+const joinGame = () => {
+  console.log('Joining game with code:', gameCode.value);
+  // Navigation logic will be added later
 };
 </script>

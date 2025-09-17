@@ -1,13 +1,13 @@
 <template>
-  <div>
-    <h1 class="text-h1 font-weight-bold">AI Alibi</h1>
-    <h2 class="text-h5 font-weight-light mt-2">An AI-Powered Detective Game</h2>
+  <div class="text-center mb-8">
+    <h1 class="text-h2 mb-4">
+      <v-icon size="large" class="mr-2">mdi-magnify</v-icon>
+      AI Alibi
+    </h1>
+    <h2 class="text-h5 font-weight-light">An AI-Powered Detective Game</h2>
     <p class="mt-4">Interrogate AI witnesses. Uncover the truth.</p>
   </div>
 </template>
 
-<script>
-export default {
-  name: "PageHeader",
-};
+<script setup>
 </script>

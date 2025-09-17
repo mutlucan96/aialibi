@@ -7,7 +7,6 @@
         <join-game />
       </v-col>
     </v-row>
-    <page-footer />
   </v-container>
 </template>
 
@@ -15,7 +14,6 @@
 import PageHeader from '@/components/PageHeader.vue';
 import CreateGame from '@/components/CreateGame.vue';
 import JoinGame from '@/components/JoinGame.vue';
-import PageFooter from '@/components/PageFooter.vue';
 
 export default {
   name: 'HomeView',
@@ -23,13 +21,12 @@ export default {
     PageHeader,
     CreateGame,
     JoinGame,
-    PageFooter,
   },
 };
 </script>
 
 <style scoped>
 .fill-height {
-  min-height: 100vh;
+  min-height: 100%;
 }
 </style>

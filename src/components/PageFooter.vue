@@ -11,3 +11,9 @@ export default {
   name: "PageFooter",
 };
 </script>
+
+<style scoped>
+a {
+  text-decoration: none;
+}
+</style>

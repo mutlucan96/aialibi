@@ -131,3 +131,7 @@ Please adhere to the following conventions when generating or modifying code:
 async function createNewGame(moderatorId) {
   // function logic here...
 }
+```
+
+### Other
+- Make sure adhere to responsive design for both desktop and mobile

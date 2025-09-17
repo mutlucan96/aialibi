@@ -49,30 +49,6 @@ Teams must gather enough evidence to correctly identify the culprit and their mo
     pnpm install
     ```
 
-### Environment Variables
-
-You must create a `.env.local` file in the root of the project to store your API keys.
-
-1.  Create the file:
-    ```sh
-    touch .env.local
-    ```
-
-2.  Add the following configuration with your own keys:
-    ```
-    # Your Firebase project configuration
-    VITE_FIREBASE_API_KEY=YOUR_API_KEY
-    VITE_FIREBASE_AUTH_DOMAIN=YOUR_AUTH_DOMAIN
-    VITE_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
-    VITE_FIREBASE_DATABASE_URL=YOUR_DATABASE_URL
-    VITE_FIREBASE_STORAGE_BUCKET=YOUR_STORAGE_BUCKET
-    VITE_FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID
-    VITE_FIREBASE_APP_ID=YOUR_APP_ID
-
-    # Your Google AI (Gemini) API Key
-    VITE_GOOGLE_AI_API_KEY=YOUR_GEMINI_API_KEY
-    ```
-
 ### Running the Development Server
 
 This command will start a local server with hot-reloading.

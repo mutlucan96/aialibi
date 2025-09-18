@@ -86,7 +86,7 @@ const createNewGame = async () => {
     const newGame = {
       status: 'lobby',
       createdAt: serverTimestamp(),
-      moderatorId: user.value.uid,
+      creatorId: user.value.uid,
     };
     const newGameRef = await push(gamesRef, newGame);
     await router.push(`/game/${newGameRef.key}`);

@@ -17,7 +17,8 @@
           <div>
             <strong class="v-label">Race</strong>
             <div class="text-caption">
-              Multiple teams compete in real-time to be the first to solve the crime. Requires a device for each team.
+              Multiple teams compete in real-time to be the first to solve the crime. Requires a
+              device for each team.
             </div>
           </div>
         </template>
@@ -40,7 +41,12 @@
               <v-list>
                 <v-list-item v-for="(team, teamId) in game.teams" :key="teamId" :title="team.name">
                   <template v-slot:append>
-                    <v-btn icon="mdi-close" size="small" variant="text" @click="$emit('remove-team', teamId)"></v-btn>
+                    <v-btn
+                      icon="mdi-close"
+                      size="small"
+                      variant="text"
+                      @click="$emit('remove-team', teamId)"
+                    ></v-btn>
                   </template>
                 </v-list-item>
               </v-list>
@@ -86,41 +92,47 @@
     ></v-textarea>
 
     <v-btn type="submit" :loading="isGeneratingStory" color="primary">
-      Generate Story
+      {{ hasStoryGenerated ? 'Regenerate Story' : 'Generate Story' }}
     </v-btn>
   </v-form>
 </template>
 
 <script setup>
-import { reactive, watch, ref } from 'vue';
-import { /** @type {PropType} */ PropType } from 'vue';
-import '@/types.js';
+import { reactive, watch, ref } from 'vue'
+import '@/types.js'
 
 const props = defineProps({
   game: {
-    type: /** @type {PropType<Game>} */ (Object),
+    type: Object,
     required: true,
   },
   gameSettings: {
-    type: /** @type {PropType<GameSettings>} */ (Object),
+    type: Object,
     required: true,
   },
   isGeneratingStory: {
     type: Boolean,
     required: true,
   },
-});
+  hasStoryGenerated: {
+    type: Boolean,
+    required: true,
+  },
+})
 
-const emit = defineEmits(['generate-story', 'open-presenter-window', 'remove-team']);
+const emit = defineEmits(['generate-story', 'open-presenter-window', 'remove-team'])
 
-const localGameSettings = reactive({ ...props.gameSettings });
-const teamManagementDialog = ref(false);
+const localGameSettings = reactive({ ...props.gameSettings })
+const teamManagementDialog = ref(false)
 
-watch(() => props.gameSettings, (newSettings) => {
-  Object.assign(localGameSettings, newSettings);
-});
+watch(
+  () => props.gameSettings,
+  (newSettings) => {
+    Object.assign(localGameSettings, newSettings)
+  },
+)
 
 function onGenerateStory() {
-  emit('generate-story', localGameSettings);
+  emit('generate-story', localGameSettings)
 }
 </script>

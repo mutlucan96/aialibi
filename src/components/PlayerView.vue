@@ -33,12 +33,12 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { /** @type {PropType} */ PropType } from 'vue';
+// import { /** @type {PropType} */ PropType } from 'vue'; // REMOVED THIS LINE
 import '@/types.js';
 
 const props = defineProps({
   game: {
-    type: /** @type {PropType<Game>} */ (Object),
+    type: Object,
     required: true,
   },
   teamName: {

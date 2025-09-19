@@ -46,8 +46,10 @@
 import GameSettingsForm from './GameSettingsForm.vue'
 import StoryReview from './StoryReview.vue'
 
-/** @import {PropType} from 'vue' */
-/** @import {Game, GameSettings, Story, Witness} from '@/types.js' */
+/**
+ * @import {PropType} from 'vue'
+ * @import {Game, GameSettings, Story, Witness} from '@/types.js'
+ */
 
 defineProps({
   game: {

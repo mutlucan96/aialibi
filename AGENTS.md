@@ -131,6 +131,11 @@ Please adhere to the following conventions when generating or modifying code:
 async function createNewGame(moderatorId) {
   // function logic here...
 }
+
+/**
+ * @import {PropType} from 'vue'
+ * @import {Game, GameSettings, Story, Witness} from '@/types.js'
+ */
 ```
 
 ### Other

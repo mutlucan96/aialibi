@@ -102,9 +102,8 @@
 import { reactive, watch, ref } from 'vue'
 
 /**
- * @typedef {import('vue').PropType} PropType
- * @typedef {import('@/types.js').Game} Game
- * @typedef {import('@/types.js').GameSettings} GameSettings
+ * @import {PropType} from 'vue'
+ * @import {Game, GameSettings} from '@/types.js'
  */
 const props = defineProps({
   game: {

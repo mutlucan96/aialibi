@@ -78,11 +78,14 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
-import '@/types.js'
 
+/**
+ * @typedef {import('vue').PropType} PropType
+ * @typedef {import('@/types.js').GameSettings} GameSettings
+ */
 const props = defineProps({
   caseFile: {
-    type: Object,
+    type: /** @type {PropType<Witness>} */ Object,
     required: true,
   },
   witnesses: {

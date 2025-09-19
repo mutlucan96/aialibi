@@ -1,7 +1,7 @@
 /**
  * @typedef {Object} GameSettings
  * @property {('classic'|'race')} mode - The selected game mode.
- * @property {('A2'|'B1'|'B2'|'C1')} languageLevel - The target language proficiency level.
+ * @property {('A2'|'B1'|'B2'|'C1'|'C2')} languageLevel - The target language proficiency level.
  * @property {number|null} targetAge - The target age for the players.
  * @property {number} timeLimit - The time limit for the game in minutes (only for 'race' mode).
  * @property {string} targetVocabulary - Comma-separated list of vocabulary to include.
@@ -39,4 +39,4 @@
  * @property {GameSettings} [settings] - The settings object for the game.
  */
 
-export {};
+export {}

@@ -32,13 +32,15 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-// import { /** @type {PropType} */ PropType } from 'vue'; // REMOVED THIS LINE
-import '@/types.js';
+import { ref, watch } from 'vue'
 
+/**
+ * @typedef {import('vue').PropType} PropType
+ * @typedef {import('@/types.js').Game} Game
+ */
 const props = defineProps({
   game: {
-    type: Object,
+    type: /** @type {PropType<Game>} */ Object,
     required: true,
   },
   teamName: {
@@ -49,17 +51,20 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
-});
+})
 
-const emit = defineEmits(['join-lobby']);
+const emit = defineEmits(['join-lobby'])
 
-const localTeamName = ref(props.teamName);
+const localTeamName = ref(props.teamName)
 
-watch(() => props.teamName, (newName) => {
-  localTeamName.value = newName;
-});
+watch(
+  () => props.teamName,
+  (newName) => {
+    localTeamName.value = newName
+  },
+)
 
 function onJoinLobby() {
-  emit('join-lobby', localTeamName.value);
+  emit('join-lobby', localTeamName.value)
 }
 </script>

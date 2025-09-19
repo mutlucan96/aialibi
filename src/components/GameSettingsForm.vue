@@ -65,6 +65,7 @@
       <v-radio label="B1" value="B1"></v-radio>
       <v-radio label="B2" value="B2"></v-radio>
       <v-radio label="C1" value="C1"></v-radio>
+      <v-radio label="C2" value="C2"></v-radio>
     </v-radio-group>
 
     <v-text-field
@@ -99,15 +100,19 @@
 
 <script setup>
 import { reactive, watch, ref } from 'vue'
-import '@/types.js'
 
+/**
+ * @typedef {import('vue').PropType} PropType
+ * @typedef {import('@/types.js').Game} Game
+ * @typedef {import('@/types.js').GameSettings} GameSettings
+ */
 const props = defineProps({
   game: {
-    type: Object,
+    type: /** @type {PropType<Game>} */ (Object),
     required: true,
   },
   gameSettings: {
-    type: Object,
+    type: /** @type {PropType<GameSettings>} */ (Object),
     required: true,
   },
   isGeneratingStory: {
@@ -122,6 +127,7 @@ const props = defineProps({
 
 const emit = defineEmits(['generate-story', 'open-presenter-window', 'remove-team'])
 
+/** @type {GameSettings} */
 const localGameSettings = reactive({ ...props.gameSettings })
 const teamManagementDialog = ref(false)
 

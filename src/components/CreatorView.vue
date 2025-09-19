@@ -36,35 +36,38 @@
   <div v-else class="text-center pa-4">
     <h2>Game in progress...</h2>
     <p>The game has started. You can monitor the progress from the Presenter View.</p>
-    <v-btn @click="$emit('open-presenter-window')" color="primary" class="mt-4">Open Presenter View</v-btn>
+    <v-btn @click="$emit('open-presenter-window')" color="primary" class="mt-4"
+      >Open Presenter View</v-btn
+    >
   </div>
 </template>
 
 <script setup>
-import GameSettingsForm from './GameSettingsForm.vue';
-import StoryReview from './StoryReview.vue';
-import '@/types.js';
+import GameSettingsForm from './GameSettingsForm.vue'
+import StoryReview from './StoryReview.vue'
+
+/** @import {PropType} from 'vue' */
+/** @import {Game, GameSettings, Story, Witness} from '@/types.js' */
 
 defineProps({
   game: {
-    type: Object,
+    type: /** @type {PropType<Game>} */ (Object),
     required: true,
   },
   gameSettings: {
-    type: Object,
+    type: /** @type {PropType<GameSettings>} */ (Object),
     required: true,
   },
   isGeneratingStory: {
     type: Boolean,
     required: true,
   },
-  // New props for the review stage
   caseFile: {
-    type: Object,
+    type: /** @type {PropType<Story>} */ (Object),
     default: null,
   },
   witnesses: {
-    type: Array,
+    type: /** @type {PropType<Witness[]>} */ (Array),
     required: true,
   },
   isGeneratingImages: {
@@ -75,7 +78,7 @@ defineProps({
     type: Boolean,
     required: true,
   },
-});
+})
 
 const emit = defineEmits([
   'generate-story',
@@ -85,13 +88,13 @@ const emit = defineEmits([
   'remove-team',
   'update:witnesses',
   'update:showSolution',
-]);
+])
 
 /**
  * Relays the generate-story event upwards.
  * @param {GameSettings} localGameSettings
  */
 function onGenerateStory(localGameSettings) {
-  emit('generate-story', localGameSettings);
+  emit('generate-story', localGameSettings)
 }
 </script>

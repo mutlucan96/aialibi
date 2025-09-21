@@ -3,6 +3,9 @@ import { ref as dbRef, set, update } from 'firebase/database'
 
 /** @import {Game, Story, GameSettings} from '@/types.js' */
 
+import { ai } from '@/firebase'
+import { getGenerativeModel, Schema } from 'firebase/ai'
+
 /**
  * Generates the story based on the settings.
  * @param {string} gameId - The ID of the game.
@@ -13,6 +16,32 @@ export async function generateStory(gameId, newSettings) {
   // Update game settings in Firebase right away
   const gameRef = dbRef(db, `games/${gameId}`)
   await update(gameRef, { settings: { ...newSettings }, story: null })
+
+  const storySchema = Schema.object({
+    properties: {
+      crime: Schema.string(),
+      clue: Schema.string(),
+      culprit: Schema.string(),
+      motive: Schema.string(),
+      witnesses: Schema.array({
+        items: Schema.object({
+          properties: {
+            name: Schema.string(),
+            personality: Schema.string(),
+            outfit: Schema.string(),
+          },
+        }),
+      }),
+    },
+  })
+
+  const model = getGenerativeModel(ai, {
+    model: 'gemini-2.5-pro',
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: storySchema,
+    },
+  })
 
   const prompt = `
     You are a master detective story writer. Based on the following game settings, create a compelling mystery case file.
@@ -46,47 +75,12 @@ export async function generateStory(gameId, newSettings) {
   console.log('--- GENERATING STORY PROMPT ---')
   console.log(prompt)
 
-  await new Promise((resolve) => setTimeout(resolve, 2000))
+  const result = await model.generateContent(prompt)
+  const storyResponse = JSON.parse(result.response.text())
+  console.log('--- STORY RESPONSE ---')
+  console.log(storyResponse)
 
-  const mockApiResponse = {
-    crime: `The world-renowned "Midnight Diamond" has been stolen from its display case at the Grand Museum Gala. The glass was cut with surgical precision, and the only thing left behind was a single, pristine white feather.`,
-    clue: 'A small, almost invisible tear was found on the velvet cushion where the diamond once sat. It appears to be from a sharp, hooked object, not from the glass cutting.',
-    culprit: 'Baroness Von Helsing',
-    motive:
-      'The Baroness is secretly a kleptomaniac from a fallen noble family. She stole the diamond to reclaim a piece of the lavish lifestyle she lost, driven by a compulsive desire for beautiful things.',
-    witnesses: [
-      {
-        name: 'Baroness Von Helsing',
-        personality:
-          "The Baroness is an elderly, elegant woman, always dressed in vintage haute couture. She appears frail and speaks with a sophisticated, almost theatrical accent. She was a close friend of the museum curator and a major donor. Beneath her polished exterior, she is cunning and deeply resentful of her family's lost fortune. She might nervously fiddle with her pearl necklace when lying.",
-        outfit:
-          'An elegant, elderly aristocratic woman with sharp eyes, wearing a vintage black dress and a string of pearls. She looks slightly disdainful.',
-      },
-      {
-        name: "Marco 'The Magician' Bellini",
-        personality:
-          "A charismatic and flamboyant stage magician hired as entertainment for the gala. He's charming, a bit of a show-off, and loves being the center of attention. He claims to have been performing a card trick at the exact moment of the theft. He is a master of misdirection and might have seen more than he lets on, but he's also afraid of getting involved with the police.",
-        outfit:
-          'A handsome, charismatic stage magician in his late 30s with a tuxedo and a top hat, holding a single playing card.',
-      },
-      {
-        name: 'Dr. Alistair Finch',
-        personality:
-          "The museum's lead historian and gemologist. He's a quiet, academic man in his 50s, obsessed with the history of the diamond. He was the last person to check on the diamond before the gala began. He is precise, detail-oriented, and slightly socially awkward. He might seem nervous, but it's mostly because he feels responsible for the diamond's safety.",
-        outfit:
-          'A bookish, slightly disheveled male historian in his 50s, wearing a tweed jacket with elbow patches and glasses.',
-      },
-      {
-        name: 'Fifi LaRoux',
-        personality:
-          "A young, ambitious journalist for a local gossip magazine who snuck into the gala. She's looking for a big scoop. She is bubbly, inquisitive, and not afraid to ask impertinent questions. She might have a photo or a piece of information that she doesn't realize is important, and she's eager to trade what she knows for a byline.",
-        outfit:
-          "A young, energetic female journalist with a determined look, holding a reporter's notebook and a vintage camera.",
-      },
-    ],
-  }
-
-  const witnesses = mockApiResponse.witnesses.map((w) => ({
+  const witnesses = storyResponse.witnesses.map((w) => ({
     ...w,
     id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
   }))
@@ -94,7 +88,7 @@ export async function generateStory(gameId, newSettings) {
   const witnessesRef = dbRef(db, `games/${gameId}/witnesses`)
   await set(witnessesRef, witnesses)
 
-  return { caseFile: mockApiResponse, witnesses }
+  return { caseFile: storyResponse, witnesses }
 }
 
 /**

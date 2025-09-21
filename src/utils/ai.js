@@ -4,7 +4,7 @@ import { ref as dbRef, set, update } from 'firebase/database'
 /** @import {Game, Story, GameSettings} from '@/types.js' */
 
 import { ai } from '@/firebase'
-import { getGenerativeModel, Schema } from 'firebase/ai'
+import { getGenerativeModel, ResponseModality, Schema } from 'firebase/ai'
 
 /**
  * Generates the story based on the settings.
@@ -99,19 +99,34 @@ export async function generateStory(gameId, newSettings) {
 export async function generateImages(witnesses) {
   if (!witnesses || witnesses.length === 0) return []
 
+  const model = getGenerativeModel(ai, {
+    model: 'gemini-2.0-flash-preview-image-generation\n',
+    generationConfig: {
+      responseModalities: [ResponseModality.TEXT, ResponseModality.IMAGE],
+    },
+  })
   const updatedWitnesses = [...witnesses]
 
   for (let i = 0; i < updatedWitnesses.length; i++) {
     const witness = updatedWitnesses[i]
-    const prompt = witness.outfit
+    const prompt = `Generate a cartoon style image of: ${witness.outfit}`
     console.log(`--- GENERATING IMAGE PROMPT for ${witness.name} ---`)
     console.log(prompt)
 
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    const newImageUrl = `https://picsum.photos/seed/${Math.random()}/512`
-    console.log(`Generated image for ${witness.name}: ${newImageUrl}`)
-    witness.imageUrl = newImageUrl
+    try {
+      const result = await model.generateContent(prompt)
+      const inlineDataParts = result.response.inlineDataParts()
+      if (inlineDataParts?.[0]) {
+        const image = inlineDataParts[0].inlineData
+        const imageUrl = `data:${image.mimeType};base64,${image.data}`
+        console.log(`Generated image for ${witness.name}`)
+        witness.imageUrl = imageUrl
+      } else {
+        console.error(`No image generated for ${witness.name}`)
+      }
+    } catch (err) {
+      console.error(`Error generating image for ${witness.name}:`, err)
+    }
   }
   return updatedWitnesses
 }

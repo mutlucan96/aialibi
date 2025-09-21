@@ -123,9 +123,11 @@ export async function generateImages(witnesses) {
         witness.imageUrl = imageUrl
       } else {
         console.error(`No image generated for ${witness.name}`)
+        alert(`No image generated for ${witness.name}`)
       }
     } catch (err) {
       console.error(`Error generating image for ${witness.name}:`, err)
+      alert(`Error generating image for ${witness.name}: ${err.message}`)
     }
   }
   return updatedWitnesses

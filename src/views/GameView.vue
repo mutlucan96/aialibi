@@ -149,6 +149,7 @@ async function handleGenerateStory(newSettings) {
     witnesses.value = newWitnesses
   } catch (error) {
     console.error('Error generating story:', error)
+    alert('Error generating story: ' + error.message)
   } finally {
     isGeneratingStory.value = false
   }

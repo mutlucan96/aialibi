@@ -92,7 +92,7 @@
       label="Theme / Additional Info (optional)"
     ></v-textarea>
 
-    <v-btn type="submit" :loading="isGeneratingStory" color="primary">
+    <v-btn ref="submitButton" type="submit" :loading="isGeneratingStory" color="primary">
       {{ hasStoryGenerated ? 'Regenerate Story' : 'Generate Story' }}
     </v-btn>
   </v-form>
@@ -129,11 +129,23 @@ const emit = defineEmits(['generate-story', 'open-presenter-window', 'remove-tea
 /** @type {GameSettings} */
 const localGameSettings = reactive({ ...props.gameSettings })
 const teamManagementDialog = ref(false)
+const submitButton = ref(null)
 
 watch(
   () => props.gameSettings,
   (newSettings) => {
     Object.assign(localGameSettings, newSettings)
+  },
+)
+
+watch(
+  () => props.hasStoryGenerated,
+  (isGenerated) => {
+    if (isGenerated) {
+      setTimeout(() => {
+        submitButton.value?.$el.scrollIntoView({ behavior: 'smooth' })
+      }, 400)
+    }
   },
 )
 

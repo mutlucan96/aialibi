@@ -40,40 +40,23 @@
             </v-avatar>
             <v-card-title class="pl-0">{{ witness.name }}</v-card-title>
           </div>
-          <v-card-text>
-            <!-- Editable fields for Race mode -->
-            <template v-if="gameSettings.mode === 'race'">
-              <v-textarea
-                v-model="witness.outfit"
-                label="Outfit Description"
-                rows="3"
-                auto-grow
-              ></v-textarea>
-            </template>
-            <!-- Read-only for Classic mode -->
-            <template v-else>
-              <p><strong>Outfit:</strong> {{ witness.outfit }}</p>
-            </template>
-          </v-card-text>
         </v-card>
       </v-col>
     </v-row>
-
-    <!-- Control Buttons -->
-    <v-footer app class="d-flex flex-wrap justify-center pa-2 ga-2">
-      <v-btn @click="$emit('generate-story', gameSettings)" color="grey"> Regenerate Story </v-btn>
-      <v-btn
-        v-if="!imagesGenerated"
-        @click="$emit('generate-images')"
-        :disabled="isGeneratingImages"
-        :loading="isGeneratingImages"
-        color="secondary"
-      >
-        Generate Images
-      </v-btn>
-      <v-btn @click="$emit('start-game')" color="primary" size="large"> Start Game </v-btn>
-    </v-footer>
   </v-container>
+  <!-- Control Buttons -->
+  <v-footer absolute class="d-flex flex-wrap justify-center pa-2 ga-2">
+    <v-btn
+      v-if="!imagesGenerated"
+      @click="$emit('generate-images')"
+      :disabled="isGeneratingImages"
+      :loading="isGeneratingImages"
+      color="secondary"
+    >
+      Generate Images
+    </v-btn>
+    <v-btn @click="$emit('start-game')" color="primary" size="large"> Start Game </v-btn>
+  </v-footer>
 </template>
 
 <script setup>

@@ -1,5 +1,5 @@
 <template>
-  <v-footer app class="justify-center">
+  <v-footer class="justify-center" style="font-size: small; max-height: 30px">
     <a href="#" class="mx-2">Impressum</a>
     <a href="#" class="mx-2">Privacy</a>
     <a href="#" class="mx-2">Source Code</a>
@@ -8,8 +8,8 @@
 
 <script>
 export default {
-  name: "PageFooter",
-};
+  name: 'PageFooter',
+}
 </script>
 
 <style scoped>

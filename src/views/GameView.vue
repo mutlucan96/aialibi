@@ -60,7 +60,7 @@ const props = defineProps({
 })
 
 // State
-/** @type {Ref<AppTypes.Game | null>} */
+/** @type {ref<AppTypes.Game | null>} */
 const game = ref(null)
 const currentUser = ref(null)
 const isLoading = ref(true)
@@ -70,9 +70,9 @@ const isJoined = ref(false)
 
 // New state for creator workflow
 const isGeneratingImages = ref(false)
-/** @type {Ref<AppTypes.Story | null>} */
+/** @type {ref<AppTypes.Story | null>} */
 const caseFile = ref(null)
-/** @type {Ref<AppTypes.Witness[]>} */
+/** @type {Ref<UnwrapRef<*[]>, UnwrapRef<*[]> | *[]>} */
 const witnesses = ref([])
 const showSolution = ref(false) // For Race Mode
 

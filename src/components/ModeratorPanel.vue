@@ -4,63 +4,69 @@
     <v-card-text>
       <div v-if="user" class="text-center">
         <p class="mb-4">Welcome!</p>
-        <v-btn
-          :loading="isCreating"
-          color="primary"
-          block
-          class="mb-2"
-          @click="createNewGame"
-        >
+        <v-btn :loading="isCreating" color="primary" block class="mb-2" @click="createNewGame">
           Create a New Game
         </v-btn>
         <v-btn variant="text" block @click="logout">Log Out</v-btn>
       </div>
       <div v-else>
-        <v-btn color="red" block @click="signInWithGoogle">
-          Login with Google
-        </v-btn>
+        <v-btn color="red" block @click="signInWithGoogle"> Login with Google </v-btn>
       </div>
     </v-card-text>
   </v-card>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-} from 'firebase/auth';
-import { ref as dbRef, push, serverTimestamp } from 'firebase/database';
-import { auth, db } from '../firebase';
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
+import { ref as dbRef, serverTimestamp, get, set } from 'firebase/database'
+import { auth, db } from '../firebase'
 
-const isCreating = ref(false);
-const user = ref(null);
-const router = useRouter();
+const isCreating = ref(false)
+const user = ref(null)
+const router = useRouter()
+
+/**
+ * @description Generates a random 4-digit integer code as a string.
+ * @returns {string} A 4-digit string representing the game code.
+ */
+const generateFourDigitCode = () => {
+  return String(Math.floor(1000 + Math.random() * 9000))
+}
+
+/**
+ * @description Checks if a game with the given 4-digit code already exists in the Firebase Realtime Database.
+ * @param {string} code The 4-digit game code to check.
+ * @returns {Promise<boolean>} True if a game with the code exists, false otherwise.
+ */
+const checkIfGameExists = async (code) => {
+  const gameRef = dbRef(db, `games/${code}`)
+  const snapshot = await get(gameRef)
+  return snapshot.exists()
+}
 
 /**
  * @description Handles user authentication state changes.
  */
 onMounted(() => {
   onAuthStateChanged(auth, (currentUser) => {
-    user.value = currentUser;
-  });
-});
+    user.value = currentUser
+  })
+})
 
 /**
  * @description Initiates Google Sign-In popup flow.
  * @returns {Promise<void>}
  */
 const signInWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
+  const provider = new GoogleAuthProvider()
   try {
-    await signInWithPopup(auth, provider);
+    await signInWithPopup(auth, provider)
   } catch (error) {
-    console.error('Error during sign-in:', error);
+    console.error('Error during sign-in:', error)
   }
-};
+}
 
 /**
  * @description Logs the current user out.
@@ -68,32 +74,40 @@ const signInWithGoogle = async () => {
  */
 const logout = async () => {
   try {
-    await signOut(auth);
+    await signOut(auth)
   } catch (error) {
-    console.error('Error during sign-out:', error);
+    console.error('Error during sign-out:', error)
   }
-};
+}
 
 /**
- * @description Creates a new game in Firebase and navigates to the game lobby.
+ * @description Creates a new game in Firebase with a unique 4-digit code and navigates to the game lobby.
  * @returns {Promise<void>}
  */
 const createNewGame = async () => {
-  if (!user.value) return;
-  isCreating.value = true;
+  if (!user.value) return
+  isCreating.value = true
   try {
-    const gamesRef = dbRef(db, 'games');
+    let gameCode
+    let gameExists = true
+
+    do {
+      gameCode = generateFourDigitCode()
+      gameExists = await checkIfGameExists(gameCode)
+    } while (gameExists)
+
+    const newGameRef = dbRef(db, `games/${gameCode}`)
     const newGame = {
       status: 'lobby',
       createdAt: serverTimestamp(),
       creatorId: user.value.uid,
-    };
-    const newGameRef = await push(gamesRef, newGame);
-    await router.push(`/game/${newGameRef.key}`);
+    }
+    await set(newGameRef, newGame)
+    await router.push(`/game/${gameCode}`)
   } catch (error) {
-    console.error('Error creating new game:', error);
+    console.error('Error creating new game:', error)
   } finally {
-    isCreating.value = false;
+    isCreating.value = false
   }
-};
+}
 </script>

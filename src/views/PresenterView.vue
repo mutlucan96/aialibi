@@ -60,6 +60,18 @@
       </v-row>
     </template>
   </v-container>
+  <v-container v-else-if="loading" class="fill-height" fluid>
+    <v-row align="center" justify="center" class="fill-height">
+      <v-col class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          :size="70"
+          :width="7"
+        ></v-progress-circular>
+      </v-col>
+    </v-row>
+  </v-container>
   <v-container v-else class="fill-height" fluid>
     <v-row align="center" justify="center" class="fill-height">
       <v-col class="text-center">
@@ -93,6 +105,7 @@ const props = defineProps({
 })
 
 const game = ref(null)
+const loading = ref(true)
 const db = getDatabase()
 let gameRef = null
 
@@ -100,6 +113,7 @@ onMounted(() => {
   gameRef = dbRef(db, `games/${props.gameId}`)
   onValue(gameRef, (snapshot) => {
     game.value = snapshot.val()
+    loading.value = false
   })
 })
 

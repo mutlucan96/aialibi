@@ -9,10 +9,10 @@
           <div class="text-h1 font-weight-bold mb-8">
             {{ gameId }}
           </div>
+          <p class="ma-4 text-h6">Scan to join</p>
           <div class="d-flex justify-center">
             <qrcode-vue :value="joinGameUrl" :size="200" level="H"></qrcode-vue>
           </div>
-          <p class="mt-4 text-h6">Scan to join</p>
           <p class="mt-2 text-body-1">
             <a :href="joinGameUrl">{{ joinGameUrl }}</a>
           </p>
@@ -138,4 +138,8 @@ const joinGameUrl = computed(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+a {
+  text-decoration: none;
+}
+</style>

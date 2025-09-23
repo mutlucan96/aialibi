@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid class="pa-0">
     <!-- Loading State -->
     <div v-if="isLoading" class="d-flex justify-center align-center" style="height: 80vh">
       <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
@@ -26,9 +26,11 @@
       />
       <PlayerView
         v-else-if="game"
+        :game-id="gameId"
         :game="game"
         :team-name="teamName"
         :is-joined="isJoined"
+        :current-user="currentUser"
         @join-lobby="handleJoinLobby"
       />
       <!-- Game Not Found View -->
@@ -45,7 +47,7 @@
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { auth, db } from '@/firebase'
 import { onValue, ref as dbRef } from 'firebase/database'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, signInAnonymously } from 'firebase/auth'
 import CreatorView from '@/components/CreatorView.vue'
 import PlayerView from '@/components/PlayerView.vue'
 import { generateImages, generateStory } from '@/utils/ai.js'
@@ -53,7 +55,7 @@ import { joinLobby, removeTeam } from '@/utils/lobby.js'
 import { startGame } from '@/utils/game-state.js'
 import { openPresenterWindow } from '@/utils/ui.js'
 
-/** @import {Game, Story, GameSettings} from '@/types.js' */
+/** @import {Game, Story, GameSettings, Witness} from '@/types.js' */
 
 // Props
 const props = defineProps({
@@ -63,8 +65,7 @@ const props = defineProps({
   },
 })
 
-// State
-/** @type {ref<Game | null>} */
+/** @type {Game | null} */
 const game = ref(null)
 const currentUser = ref(null)
 const isLoading = ref(true)
@@ -72,11 +73,10 @@ const isGeneratingStory = ref(false)
 const teamName = ref('')
 const isJoined = ref(false)
 
-// New state for creator workflow
 const isGeneratingImages = ref(false)
 /** @type {ref<Story | null>} */
 const caseFile = ref(null)
-/** @type {Ref<UnwrapRef<*[]>, UnwrapRef<*[]> | *[]>} */
+/** @type {import('vue').Ref<Witness[]>} */
 const witnesses = ref([])
 const showSolution = ref(false) // For Race Mode
 
@@ -186,7 +186,14 @@ async function handleRemoveTeam(teamId) {
 
 let authUnsubscribe = null
 onMounted(() => {
-  authUnsubscribe = onAuthStateChanged(auth, (user) => {
+  authUnsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      // If no user, sign in anonymously first
+      await signInAnonymously(auth)
+      // onAuthStateChanged will be called again with the anonymous user,
+      // so we can return here and let the next call handle fetchGameData.
+      return
+    }
     currentUser.value = user
     fetchGameData()
   })

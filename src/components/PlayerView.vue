@@ -2,7 +2,14 @@
   <v-container fluid>
     <!-- Lobby View for Player -->
     <div v-if="game.status === 'lobby'">
-      <PlayerLobbyView :team-name="teamName" :is-joined="isJoined" @join-lobby="handleJoinLobby" />
+      <PlayerLobbyView
+        :game-id="gameId"
+        :game="game"
+        :team-name="teamName"
+        :is-joined="isJoined"
+        :current-user="currentUser"
+        @join-lobby="handleJoinLobby"
+      />
     </div>
 
     <!-- In-Progress View for Player -->
@@ -29,8 +36,13 @@ import PlayerFinishedView from './PlayerFinishedView.vue'
  * @property {Game} game - The reactive game object from Firebase.
  * @property {string} teamName - The current player's team name.
  * @property {boolean} isJoined - A boolean indicating if the player has successfully joined the lobby.
+ * @property {import('firebase/auth').User | null} currentUser - The current authenticated user.
  */
 defineProps({
+  gameId: {
+    type: String,
+    required: true,
+  },
   /** @type {PropType<Game>} */
   game: {
     type: Object,
@@ -43,6 +55,10 @@ defineProps({
   isJoined: {
     type: Boolean,
     required: true,
+  },
+  currentUser: {
+    type: Object, // Firebase User object
+    required: false, // Can be null initially
   },
 })
 

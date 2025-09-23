@@ -26,6 +26,8 @@
  * @property {string} name - The name of the team.
  * @property {string} uid - The unique ID of the user who created the team.
  * @property {number} score - The team's current score.
+ * @property {string} emoji
+ * @property {string} color
  */
 
 /**

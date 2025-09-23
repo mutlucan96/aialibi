@@ -107,9 +107,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  // Detach listener when component is unmounted
   if (gameRef) {
-    onValue(gameRef, () => {}) // Detach by calling onValue with an empty callback
+    onValue(gameRef, () => {})
   }
 })
 
@@ -124,7 +123,6 @@ const teams = computed(() => {
 })
 
 const joinGameUrl = computed(() => {
-  // Assuming the client-side game join URL is /game/{gameId}
   return `${window.location.origin}/game/${props.gameId}`
 })
 </script>

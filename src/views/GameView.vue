@@ -184,22 +184,20 @@ async function handleRemoveTeam(teamId) {
   await removeTeam(props.gameId, teamId)
 }
 
+let authUnsubscribe = null
 onMounted(() => {
-  const authUnsubscribe = onAuthStateChanged(auth, (user) => {
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
     currentUser.value = user
-    if (user) {
-      fetchGameData()
-    } else {
-      console.log('User is not authenticated.')
-      isLoading.value = false
-    }
+    fetchGameData()
   })
+})
 
-  onUnmounted(() => {
+onUnmounted(() => {
+  if (authUnsubscribe) {
     authUnsubscribe()
-    if (gameListener) {
-      gameListener()
-    }
-  })
+  }
+  if (gameListener) {
+    gameListener()
+  }
 })
 </script>

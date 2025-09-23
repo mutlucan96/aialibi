@@ -106,12 +106,14 @@ import { reactive, watch, ref } from 'vue'
  * @import {Game, GameSettings} from '@/types.js'
  */
 const props = defineProps({
+  /** @type {PropType<Game>} */
   game: {
-    type: /** @type {PropType<Game>} */ (Object),
+    type: Object,
     required: true,
   },
+  /** @type {PropType<GameSettings>} */
   gameSettings: {
-    type: /** @type {PropType<GameSettings>} */ (Object),
+    type: Object,
     required: true,
   },
   isGeneratingStory: {
@@ -126,9 +128,11 @@ const props = defineProps({
 
 const emit = defineEmits(['generate-story', 'open-presenter-window', 'remove-team'])
 
-/** @type {GameSettings} */
+/** @type { Reactive<GameSettings>} */
 const localGameSettings = reactive({ ...props.gameSettings })
+/** @type {Ref<boolean>} */
 const teamManagementDialog = ref(false)
+/** @type {Ref<HTMLElement | null>} */
 const submitButton = ref(null)
 
 watch(
@@ -143,7 +147,9 @@ watch(
   (isGenerated) => {
     if (isGenerated) {
       setTimeout(() => {
-        submitButton.value?.$el.scrollIntoView({ behavior: 'smooth' })
+        if (submitButton.value && submitButton.value.$el) {
+          submitButton.value.$el.scrollIntoView({ behavior: 'smooth' })
+        }
       }, 400)
     }
   },

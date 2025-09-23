@@ -106,7 +106,6 @@ function fetchGameData() {
   const gameRef = dbRef(db, `games/${props.gameId}`)
   gameListener = onValue(gameRef, (snapshot) => {
     const data = snapshot.val()
-    console.log('fetchGameData: Received data from Firebase:', data)
     if (data) {
       game.value = data
       if (data.settings) {
@@ -118,7 +117,6 @@ function fetchGameData() {
       // Always update witnesses.value from Firebase if data.witnesses exists
       if (data.witnesses) {
         witnesses.value = data.witnesses
-        console.log('fetchGameData: witnesses.value updated:', witnesses.value)
       }
       if (currentUser.value && data.teams) {
         const userTeam = Object.values(data.teams).find(

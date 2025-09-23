@@ -4,6 +4,7 @@
       <v-row align="center" justify="center">
         <!-- Left Column: Game Code and QR Code -->
         <v-col cols="12" md="6" class="text-center">
+          <p class="text-h6 text-center mb-4">Waiting for the host to start the game...</p>
           <h1 class="text-h3 mb-4">Join the Game!</h1>
           <div class="text-h1 font-weight-bold mb-8">
             {{ gameId }}
@@ -12,6 +13,9 @@
             <qrcode-vue :value="joinGameUrl" :size="200" level="H"></qrcode-vue>
           </div>
           <p class="mt-4 text-h6">Scan to join</p>
+          <p class="mt-2 text-body-1">
+            <a :href="joinGameUrl">{{ joinGameUrl }}</a>
+          </p>
         </v-col>
 
         <!-- Right Column: Teams in the Lobby -->
@@ -25,13 +29,6 @@
             </v-list-item>
           </v-list>
           <p v-else class="text-h6 text-center">No teams have joined yet.</p>
-        </v-col>
-      </v-row>
-
-      <!-- Footer for Lobby Screen -->
-      <v-row class="mt-auto">
-        <v-col class="text-center">
-          <p class="text-h6">Waiting for the host to start the game...</p>
         </v-col>
       </v-row>
     </template>

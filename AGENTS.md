@@ -141,4 +141,3 @@ async function createNewGame(moderatorId) {
 ### Other
 - Make sure adhere to responsive design for both desktop and mobile
 - Divide functionality into components as needed and use existing ones as much as possible
-- domain is: alibi.mutlucan.dev (use this for creating links and qr codes)

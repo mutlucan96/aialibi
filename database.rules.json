@@ -3,8 +3,7 @@
     "games": {
       "$gameId": {
         ".read": true,
-        ".write": "(!data.exists() && newData.child('creatorId').val() === auth.uid) || (data.exists() && data.child('creatorId').val() === auth.uid)",
-
+        ".write": "(!data.exists() && auth.token.firebase.sign_in_provider === 'google.com') || (data.exists() && data.child('creatorId').val() === auth.uid)",
         "teams": {
           ".write": "auth != null",
           "$teamId": {

@@ -180,7 +180,7 @@ async function selectColor(color) {
   selectedColor.value = color
   try {
     await update(dbRef(db, `games/${props.gameId}/teams/${props.currentUser.uid}`), {
-      selectedColor: color,
+      color: color,
     })
   } catch (e) {
     console.error(e)
@@ -192,7 +192,7 @@ async function selectEmoji(emoji) {
   selectedEmoji.value = emoji
   try {
     await update(dbRef(db, `games/${props.gameId}/teams/${props.currentUser.uid}`), {
-      selectedEmoji: emoji,
+      emoji: emoji,
     })
   } catch (e) {
     console.error(e)

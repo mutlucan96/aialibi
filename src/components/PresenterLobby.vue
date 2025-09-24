@@ -16,21 +16,13 @@
       </p>
     </v-col>
 
-    <!-- Right Column: Teams in the Lobby -->
-    <v-col cols="12" md="6">
-      <h2 class="text-h4 mb-4 text-center">Teams in the Lobby</h2>
-      <v-list v-if="teams.length > 0" dense>
-        <v-list-item v-for="team in teams" :key="team.id">
-          <v-list-item-title class="text-h5">{{ team.emoji }} {{ team.name }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
-      <p v-else class="text-h6 text-center">No teams have joined yet.</p>
-    </v-col>
+    <TeamList :game="game" />
   </v-row>
 </template>
 
 <script setup>
 import QrcodeVue from 'qrcode.vue'
+import TeamList from '@/components/TeamList.vue'
 import { computed } from 'vue'
 
 /**
@@ -49,15 +41,6 @@ const props = defineProps({
   },
 })
 
-const teams = computed(() => {
-  if (!props.game || !props.game.teams) {
-    return []
-  }
-  return Object.entries(props.game.teams).map(([id, teamData]) => ({
-    id,
-    ...teamData,
-  }))
-})
 
 const joinGameUrl = computed(() => {
   return `${window.location.origin}/game/${props.gameId}`

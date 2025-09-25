@@ -5,9 +5,11 @@
         class="witness-card"
         :disabled="isWitnessDisabled(witness.id)"
         @click="!isWitnessDisabled(witness.id) && $emit('open-chat', witness.id)"
+        @click.stop="!isWitnessDisabled(witness.id) && $emit('update-talking-to', witness.id)"
       >
         <v-img :src="witness.imageUrl" aspect-ratio="1"></v-img>
         <v-card-title class="text-body-2 pa-1 text-center">{{ witness.name }}</v-card-title>
+        <v-card-subtitle class="text-caption pa-1 text-center">{{ getWitnessStatus(witness) }}</v-card-subtitle>
       </v-card>
     </v-col>
   </v-row>
@@ -19,6 +21,10 @@
  * @import {PropType} from 'vue'
  */
 const props = defineProps({
+  gameId: {
+    type: String,
+    required: true,
+  },
   /** @type {PropType<Witness[]>} */
   witnesses: {
     type: Array,
@@ -32,12 +38,26 @@ const props = defineProps({
 })
 
 /**
+ * Generates the status text for a witness.
+ * @param {Witness} witness - The witness object.
+ * @returns {string} - The status text (e.g., "Available" or "Talking to 🕵️ Team Alpha").
+ */
+const getWitnessStatus = (witness) => {
+  if (witness.talkingToTeamId && props.teams[witness.talkingToTeamId]) {
+    const team = props.teams[witness.talkingToTeamId]
+    return `Talking to ${team.emoji} ${team.name}`
+  }
+  return 'Available'
+}
+
+/**
  * Checks if a witness is currently disabled (i.e., busy with another team).
  * @param {string} witnessId - The ID of the witness to check.
  * @returns {boolean} - True if the witness is disabled, false otherwise.
  */
 const isWitnessDisabled = (witnessId) => {
-  return Object.values(props.teams).some((team) => team.talkingTo === witnessId)
+  const witness = props.witnesses.find((w) => w.id === witnessId)
+  return witness && witness.talkingToTeamId !== null && witness.talkingToTeamId !== undefined
 }
 </script>
 

@@ -13,6 +13,7 @@
  * @property {string} id - The unique ID of the witness.
  * @property {string} name - The name of the witness.
  * @property {string} imageUrl - The URL for the witness's image.
+ * @property {string} talkingToTeamId - The ID of the team that is currently talking to the witness.
  */
 
 /**

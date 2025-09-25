@@ -14,7 +14,12 @@
 
     <!-- In-Progress View for Player -->
     <div v-else-if="game.status === 'in-progress'">
-      <PlayerInProgressView :game="game" :team-name="teamName" :current-user="currentUser" />
+      <PlayerInProgressView
+        :game-id="gameId"
+        :game="game"
+        :team-name="teamName"
+        :current-user="currentUser"
+      />
     </div>
     <!-- Finished View for Player -->
     <div v-else-if="game.status === 'finished'">

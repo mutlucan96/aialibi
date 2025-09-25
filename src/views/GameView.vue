@@ -107,16 +107,21 @@ function fetchGameData() {
   gameListener = onValue(gameRef, (snapshot) => {
     const data = snapshot.val()
     if (data) {
-      game.value = data
+      // Ensure witnesses is an array before assigning to game.value
+      if (data.witnesses && typeof data.witnesses === 'object' && !Array.isArray(data.witnesses)) {
+        data.witnesses = Object.values(data.witnesses);
+      } else if (!data.witnesses) {
+        data.witnesses = []; // Default to an empty array if no witnesses
+      }
+
+      game.value = data; // Assign the processed data to game.value
+      witnesses.value = data.witnesses; // Also update the separate witnesses ref
+
       if (data.settings) {
         Object.assign(gameSettings, data.settings)
       }
       if (data.story) {
         caseFile.value = data.story
-      }
-      // Always update witnesses.value from Firebase if data.witnesses exists
-      if (data.witnesses) {
-        witnesses.value = data.witnesses
       }
       if (currentUser.value && data.teams) {
         const userTeam = Object.values(data.teams).find(

@@ -9,6 +9,11 @@
           "$teamId": {
             ".write": "data.child('uid').val() === auth.uid"
           }
+        },
+        "witnesses": {
+          "$witnessId": {
+            ".write": "auth != null"
+          }
         }
       }
     }

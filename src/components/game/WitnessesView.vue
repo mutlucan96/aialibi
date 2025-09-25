@@ -1,9 +1,11 @@
 <template>
   <v-container class="pa-0">
     <WitnessCards
+      :game-id="gameId"
       :witnesses="game.witnesses"
       :teams="game.teams"
       @open-chat="$emit('open-chat', $event)"
+      @update-talking-to="$emit('update-talking-to', $event)"
     />
     <AccusationButton @open-accusation="$emit('open-accusation')" />
   </v-container>
@@ -18,6 +20,10 @@ import AccusationButton from './AccusationButton.vue'
  * @import {PropType} from 'vue'
  */
 const props = defineProps({
+  gameId: {
+    type: String,
+    required: true,
+  },
   /** @type {PropType<Game>} */
   game: {
     type: Object,

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="pa-0">
     <!-- Teams Display -->
     <v-row justify="center" class="mb-4">
       <v-col cols="12">
@@ -20,17 +20,14 @@
 
     <!-- Witnesses Display -->
     <v-row justify="center">
-      <v-col v-for="witness in game.witnesses" :key="witness.id" cols="12" sm="6" md="3">
+      <v-col v-for="witness in game.witnesses" :key="witness.id" cols="5" sm="5" md="3">
         <v-card
           class="witness-card"
           :disabled="isWitnessDisabled(witness.id)"
           @click="!isWitnessDisabled(witness.id) && $emit('open-chat', witness.id)"
         >
-          <v-img :src="witness.imageUrl" height="150px" cover></v-img>
-          <v-card-title>{{ witness.name }}</v-card-title>
-          <v-card-subtitle v-if="isWitnessDisabled(witness.id)">
-            Busy with another team
-          </v-card-subtitle>
+          <v-img :src="witness.imageUrl" aspect-ratio="1"></v-img>
+          <v-card-title class="text-body-2 pa-1 text-center">{{ witness.name }}</v-card-title>
         </v-card>
       </v-col>
     </v-row>

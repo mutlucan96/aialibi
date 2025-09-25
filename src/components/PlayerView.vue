@@ -14,9 +14,8 @@
 
     <!-- In-Progress View for Player -->
     <div v-else-if="game.status === 'in-progress'">
-      <PlayerInProgressView />
+      <PlayerInProgressView :game="game" :team-name="teamName" :current-user="currentUser" />
     </div>
-
     <!-- Finished View for Player -->
     <div v-else-if="game.status === 'finished'">
       <PlayerFinishedView />
@@ -28,7 +27,6 @@
 import PlayerLobbyView from './PlayerLobbyView.vue'
 import PlayerInProgressView from './PlayerInProgressView.vue'
 import PlayerFinishedView from './PlayerFinishedView.vue'
-
 /**
  * Props for the PlayerView component.
  * @import {Game} from '@/types.js'
@@ -38,7 +36,7 @@ import PlayerFinishedView from './PlayerFinishedView.vue'
  * @property {boolean} isJoined - A boolean indicating if the player has successfully joined the lobby.
  * @property {import('firebase/auth').User | null} currentUser - The current authenticated user.
  */
-defineProps({
+const props = defineProps({
   gameId: {
     type: String,
     required: true,
@@ -56,9 +54,10 @@ defineProps({
     type: Boolean,
     required: true,
   },
+  /** @type {PropType<currentUser | null>} */
   currentUser: {
-    type: Object, // Firebase User object
-    required: false, // Can be null initially
+    type: Object,
+    required: false,
   },
 })
 

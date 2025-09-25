@@ -28,6 +28,7 @@
  * @property {number} score - The team's current score.
  * @property {string} emoji
  * @property {string} color
+ * @property {string} talkingTo - The ID of the witness the team is currently talking to.
  */
 
 /**
@@ -39,6 +40,13 @@
  * @property {Object.<string, Team>} [teams] - A dictionary of teams that have joined the game.
  * @property {Story} [story] - The generated story object for the game.
  * @property {GameSettings} [settings] - The settings object for the game.
+ * @property {Witness[]} witnesses
+ */
+
+/**
+ * @typedef {Object} ChatMessage
+ * @property {('player'|'ai')} sender - The sender of the message.
+ * @property {string} text - The content of the message.
  */
 
 export {}

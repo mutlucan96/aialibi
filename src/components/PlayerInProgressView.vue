@@ -1,10 +1,112 @@
 <template>
-  <v-row class="justify-center text-center">
-    <v-col cols="12">
-      <h2>The Investigation is Underway!</h2>
-      <div><!-- Placeholder for in-progress game interface --></div>
-    </v-col>
-  </v-row>
+  <v-container fluid>
+    <Timer
+      v-if="game.settings.mode === 'race'"
+      :startTime="game.startTime"
+      :duration="game.duration"
+    />
+    <CrimeDescription :crime="game.story.crime" />
+    <WitnessesView
+      :game="game"
+      :mode="game.settings.mode"
+      @open-chat="handleOpenChat"
+      @open-accusation="handleOpenAccusation"
+    />
+    <ChatModal
+      v-model="isChatOpen"
+      :witness="activeWitness"
+      :chatHistory="currentChatHistory"
+      @send-message="handleSendMessage"
+      @close="isChatOpen = false"
+    />
+  </v-container>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import Timer from './game/Timer.vue'
+import CrimeDescription from './game/CrimeDescription.vue'
+import WitnessesView from './game/WitnessesView.vue'
+import ChatModal from './game/ChatModal.vue'
+
+/**
+ * @import {Game} from '@/types.js'
+ * @import {PropType} from 'vue'
+ * @property {import('firebase/auth').User | null} currentUser - The current authenticated user.
+ */
+const props = defineProps({
+  /** @type {PropType<Game>} */
+  game: {
+    type: Object,
+    required: true,
+  },
+  teamName: {
+    type: String,
+    required: true,
+  },
+  /** @type {PropType<currentUser | null>} */
+  currentUser: {
+    type: Object,
+    required: false,
+  },
+})
+
+const route = useRoute()
+const router = useRouter()
+
+const isChatOpen = ref(false)
+const activeWitness = ref(null)
+const currentChatHistory = ref([])
+
+// Watch for changes in isChatOpen to manage browser history
+watch(isChatOpen, (newValue) => {
+  if (newValue) {
+    // Modal is opening, push a new state to history
+    router.push({ query: { ...route.query, chat: 'open' } })
+  } else {
+    // Modal is closing, remove the chat query parameter from history
+    const newQuery = { ...route.query }
+    delete newQuery.chat
+    router.replace({ query: newQuery })
+  }
+})
+
+// Watch for changes in route query to close modal if 'chat' parameter is removed
+watch(
+  () => route.query.chat,
+  (newChatQuery) => {
+    if (!newChatQuery && isChatOpen.value) {
+      isChatOpen.value = false
+    }
+  },
+)
+
+function handleOpenChat(witnessId) {
+  activeWitness.value = props.game.witnesses.find((w) => w.id === witnessId)
+  currentChatHistory.value = [] // Load chat history for this witness
+  isChatOpen.value = true
+}
+
+function handleOpenAccusation() {
+  // Logic for making an accusation
+  console.log('Make an Accusation button clicked!')
+  // This would typically open another modal or navigate to an accusation view
+}
+
+function handleSendMessage(messageText) {
+  // Logic to send message to Firebase and trigger AI response
+  console.log('Message sent:', messageText)
+  // Add message to chat history
+  currentChatHistory.value.push({ sender: 'player', text: messageText })
+  // Simulate AI response
+  setTimeout(() => {
+    currentChatHistory.value.push({
+      sender: 'ai',
+      text: 'Interesting point. What else would you like to know?',
+    })
+  }, 1000)
+}
+</script>
+
+<style scoped></style>

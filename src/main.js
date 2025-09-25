@@ -15,10 +15,24 @@ const vuetify = createVuetify({
   directives,
   theme: {
     defaultTheme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+    themes: {
+      light: {
+        dark: false,
+        colors: {
+          background: '#c9bcaa',
+        },
+      },
+      dark: {
+        dark: true,
+        colors: {
+          background: '#23201f',
+        },
+      },
+    },
   },
 })
 
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
   vuetify.theme.global.name.value = e.matches ? 'dark' : 'light'
 })
 

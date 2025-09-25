@@ -19,6 +19,7 @@
       v-model="isChatOpen"
       :witness="activeWitness"
       :chatHistory="currentChatHistory"
+      :isAiResponding="isAiResponding"
       @send-message="handleSendMessage"
       @close="isChatOpen = false"
     />
@@ -26,7 +27,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import TimerView from './game/TimerView.vue'
 import CrimeDescription from './game/CrimeDescription.vue'
@@ -65,7 +66,8 @@ const router = useRouter()
 const isChatOpen = ref(false)
 const activeWitness = ref(null)
 const currentChatHistory = ref([])
-const chatModalRef = ref(null) // New ref for ChatModal
+const chatModalRef = ref(null)
+const isAiResponding = ref(false) // New ref to track AI response status
 
 // Watch for changes in isChatOpen to manage browser history and update witness talkingTo state
 watch(isChatOpen, async (newValue) => {
@@ -104,35 +106,32 @@ function handleOpenAccusation() {
   // This would typically open another modal or navigate to an accusation view
 }
 
-import { updateWitnessTalkingTo } from '@/utils/game-state.js'
+import { updateWitnessTalkingTo, clearAllWitnessTalkingTo } from '@/utils/game-state.js'
 import { sendChatMessage } from '@/utils/ai.js'
+
+onMounted(async () => {
+  if (props.gameId) {
+    await clearAllWitnessTalkingTo(props.gameId)
+  }
+})
 
 async function handleSendMessage(messageText) {
   console.log('Message sent:', messageText)
   currentChatHistory.value.push({ sender: 'player', text: messageText })
+  currentChatHistory.value.push({ sender: 'ai', text: '' }) // Placeholder for AI response
+  isAiResponding.value = true
 
-  let aiResponseText = ''
   await sendChatMessage(
     messageText,
     (chunk) => {
-      aiResponseText += chunk
-      // Update the last AI message or add a new one
+      // Update the last AI message with streamed chunks
       if (currentChatHistory.value.length > 0 && currentChatHistory.value[currentChatHistory.value.length - 1].sender === 'ai') {
-        currentChatHistory.value[currentChatHistory.value.length - 1].text = aiResponseText
-      } else {
-        currentChatHistory.value.push({ sender: 'ai', text: aiResponseText })
-      }
-      // Stream the chunk to the ChatModal
-      if (chatModalRef.value) {
-        chatModalRef.value.streamAiResponse(chunk)
+        currentChatHistory.value[currentChatHistory.value.length - 1].text += chunk
       }
     },
     () => {
       console.log('AI response complete.')
-      // Signal completion to the ChatModal
-      if (chatModalRef.value) {
-        chatModalRef.value.streamAiResponse('', true) // Pass true for done
-      }
+      isAiResponding.value = false
     }
   )
 }

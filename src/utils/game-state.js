@@ -46,3 +46,27 @@ export async function updateWitnessTalkingTo(gameId, witnessId, teamId) {
     console.warn(`No witnesses found for game ${gameId}.`)
   }
 }
+
+/**
+ * Clears the 'talkingToTeamId' for all witnesses in a given game.
+ * This is used to reset the state on page load or when a game ends.
+ * @param {string} gameId - The ID of the game.
+ */
+export async function clearAllWitnessTalkingTo(gameId) {
+  const gameRef = dbRef(db, `games/${gameId}`)
+  const snapshot = await get(child(gameRef, 'witnesses'))
+  const witnesses = snapshot.val()
+
+  if (witnesses) {
+    const updates = {}
+    witnesses.forEach((witness, index) => {
+      if (witness.talkingToTeamId) {
+        updates[`games/${gameId}/witnesses/${index}/talkingToTeamId`] = null
+      }
+    })
+    if (Object.keys(updates).length > 0) {
+      await update(dbRef(db), updates)
+      console.log(`Cleared 'talkingToTeamId' for witnesses in game ${gameId}.`)
+    }
+  }
+}

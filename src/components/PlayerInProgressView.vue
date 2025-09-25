@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <Timer
+    <TimerView
       v-if="game.settings.mode === 'race'"
       :startTime="game.startTime"
       :duration="game.duration"
@@ -25,7 +25,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Timer from './game/Timer.vue'
+import TimerView from './game/TimerView.vue'
 import CrimeDescription from './game/CrimeDescription.vue'
 import WitnessesView from './game/WitnessesView.vue'
 import ChatModal from './game/ChatModal.vue'

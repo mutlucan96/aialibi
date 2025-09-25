@@ -4,7 +4,7 @@ import { ref as dbRef, set, update } from 'firebase/database'
 /** @import {Game, Story, GameSettings} from '@/types.js' */
 
 import { ai } from '@/firebase'
-import { getGenerativeModel, ResponseModality, Schema } from 'firebase/ai'
+import { getGenerativeModel, ResponseModality, Schema, GenerativeModel } from 'firebase/ai'
 
 /**
  * Generates the story based on the settings.
@@ -89,6 +89,25 @@ export async function generateStory(gameId, newSettings) {
   await set(witnessesRef, witnesses)
 
   return { caseFile: storyResponse, witnesses }
+}
+
+/**
+ * Sends a message to the AI and streams the response.
+ * @param {string} message - The message to send.
+ * @param {(chunk: string) => void} onChunk - Callback for each streamed chunk.
+ * @param {() => void} onComplete - Callback when the stream is complete.
+ * @returns {Promise<void>}
+ */
+export async function sendChatMessage(message, onChunk, onComplete) {
+  const chatModel = getGenerativeModel(ai, {
+    model: 'gemini-2.5-flash',
+  })
+  const result = await chatModel.generateContentStream(message)
+
+  for await (const chunk of result.stream) {
+    onChunk(chunk.text())
+  }
+  onComplete()
 }
 
 /**

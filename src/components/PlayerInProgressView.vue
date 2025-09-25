@@ -15,6 +15,7 @@
       @update-talking-to="handleUpdateTalkingTo"
     />
     <ChatModal
+      ref="chatModalRef"
       v-model="isChatOpen"
       :witness="activeWitness"
       :chatHistory="currentChatHistory"
@@ -64,6 +65,7 @@ const router = useRouter()
 const isChatOpen = ref(false)
 const activeWitness = ref(null)
 const currentChatHistory = ref([])
+const chatModalRef = ref(null) // New ref for ChatModal
 
 // Watch for changes in isChatOpen to manage browser history and update witness talkingTo state
 watch(isChatOpen, async (newValue) => {
@@ -103,19 +105,36 @@ function handleOpenAccusation() {
 }
 
 import { updateWitnessTalkingTo } from '@/utils/game-state.js'
+import { sendChatMessage } from '@/utils/ai.js'
 
-function handleSendMessage(messageText) {
-  // Logic to send message to Firebase and trigger AI response
+async function handleSendMessage(messageText) {
   console.log('Message sent:', messageText)
-  // Add message to chat history
   currentChatHistory.value.push({ sender: 'player', text: messageText })
-  // Simulate AI response
-  setTimeout(() => {
-    currentChatHistory.value.push({
-      sender: 'ai',
-      text: 'Interesting point. What else would you like to know?',
-    })
-  }, 1000)
+
+  let aiResponseText = ''
+  await sendChatMessage(
+    messageText,
+    (chunk) => {
+      aiResponseText += chunk
+      // Update the last AI message or add a new one
+      if (currentChatHistory.value.length > 0 && currentChatHistory.value[currentChatHistory.value.length - 1].sender === 'ai') {
+        currentChatHistory.value[currentChatHistory.value.length - 1].text = aiResponseText
+      } else {
+        currentChatHistory.value.push({ sender: 'ai', text: aiResponseText })
+      }
+      // Stream the chunk to the ChatModal
+      if (chatModalRef.value) {
+        chatModalRef.value.streamAiResponse(chunk)
+      }
+    },
+    () => {
+      console.log('AI response complete.')
+      // Signal completion to the ChatModal
+      if (chatModalRef.value) {
+        chatModalRef.value.streamAiResponse('', true) // Pass true for done
+      }
+    }
+  )
 }
 
 async function handleUpdateTalkingTo(witnessId) {

@@ -109,13 +109,13 @@ function fetchGameData() {
     if (data) {
       // Ensure witnesses is an array before assigning to game.value
       if (data.witnesses && typeof data.witnesses === 'object' && !Array.isArray(data.witnesses)) {
-        data.witnesses = Object.values(data.witnesses);
+        data.witnesses = Object.values(data.witnesses)
       } else if (!data.witnesses) {
-        data.witnesses = []; // Default to an empty array if no witnesses
+        data.witnesses = []
       }
 
-      game.value = data; // Assign the processed data to game.value
-      witnesses.value = data.witnesses; // Also update the separate witnesses ref
+      game.value = data
+      witnesses.value = data.witnesses
 
       if (data.settings) {
         Object.assign(gameSettings, data.settings)
@@ -191,10 +191,7 @@ let authUnsubscribe = null
 onMounted(() => {
   authUnsubscribe = onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      // If no user, sign in anonymously first
       await signInAnonymously(auth)
-      // onAuthStateChanged will be called again with the anonymous user,
-      // so we can return here and let the next call handle fetchGameData.
       return
     }
     currentUser.value = user

@@ -20,14 +20,14 @@
       <v-card-text style="max-height: 400px; overflow-y: auto">
         <div v-for="(message, index) in chatHistory" :key="index" class="mb-2">
           <div :class="{ 'text-right': message.sender === 'player' }">
-            <v-chip :color="message.sender === 'player' ? 'primary' : 'grey-lighten-1'">
+            <v-chip :color="message.sender === 'player' ? 'primary' : 'text'">
               {{ message.text }}
             </v-chip>
           </div>
         </div>
         <!-- Placeholder for streaming AI response -->
         <div v-if="streamingMessage" class="mb-2">
-          <v-chip color="grey-lighten-1">
+          <v-chip>
             {{ streamingMessage }}
           </v-chip>
         </div>

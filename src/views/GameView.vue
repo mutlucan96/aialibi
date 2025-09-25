@@ -166,7 +166,7 @@ async function handleGenerateImages() {
 }
 
 async function handleStartGame() {
-  await startGame(props.gameId, caseFile.value, witnesses.value)
+  await startGame(props.gameId, caseFile.value, witnesses.value, gameSettings)
 }
 
 function handleOpenPresenterWindow() {

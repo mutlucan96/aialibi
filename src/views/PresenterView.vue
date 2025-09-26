@@ -14,6 +14,13 @@
     <template v-else>
       <PresenterNotFound :gameId="gameId" :loading="loading" />
     </template>
+
+    <v-snackbar v-model="snackbar" :timeout="snackbarTimeout" color="info">
+      {{ snackbarText }}
+      <template v-slot:actions>
+        <v-btn color="white" variant="text" @click="snackbar = false"> Close </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -45,12 +52,23 @@ const loading = ref(true)
 const db = getDatabase()
 let gameRef = null
 
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarTimeout = ref(10000)
+
+const showSnackbar = (message) => {
+  snackbarText.value = message
+  snackbar.value = true
+}
+
 onMounted(() => {
   gameRef = dbRef(db, `games/${props.gameId}`)
   onValue(gameRef, (snapshot) => {
     game.value = snapshot.val()
     loading.value = false
   })
+
+  showSnackbar('Move this tab to an extended screen and press F11 for fullscreen.')
 })
 
 onUnmounted(() => {

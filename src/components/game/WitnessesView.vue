@@ -7,13 +7,11 @@
       @open-chat="$emit('open-chat', $event)"
       @update-talking-to="$emit('update-talking-to', $event)"
     />
-    <AccusationButton @open-accusation="$emit('open-accusation')" />
   </v-container>
 </template>
 
 <script setup>
 import WitnessCards from './WitnessCards.vue'
-import AccusationButton from './AccusationButton.vue'
 
 /**
  * @import {Game} from '@/types.js'

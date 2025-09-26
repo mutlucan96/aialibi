@@ -24,6 +24,7 @@
       @send-message="handleSendMessage"
       @close="isChatOpen = false"
     />
+    <AccusationButton @open-accusation="handleOpenAccusation" />
   </v-container>
 </template>
 
@@ -34,6 +35,7 @@ import TimerView from './game/TimerView.vue'
 import CrimeDescription from './game/CrimeDescription.vue'
 import WitnessesView from './game/WitnessesView.vue'
 import ChatModal from './game/ChatModal.vue'
+import AccusationButton from './game/AccusationButton.vue'
 import {
   updateWitnessTalkingTo,
   clearAllWitnessTalkingTo,

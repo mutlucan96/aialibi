@@ -117,16 +117,7 @@ export async function sendChatMessage(
     return
   }
 
-  // 1. Save the Player's Question to Firebase
-  const chatRef = dbRef(db, `games/${gameId}/chats/${witnessId}`)
-  const newChatMessageRef = await push(chatRef, {
-    teamId: teamId,
-    question: messageText,
-    timestamp: serverTimestamp(),
-  })
-  const newChatKey = newChatMessageRef.key
-
-  // 2. Construct the Master "System Prompt"
+  // Construct the Master "System Prompt"
   const gameRef = dbRef(db, `games/${gameId}`)
   const snapshot = await get(child(gameRef, `chats/${witnessId}`))
   const allChatHistory = snapshot.val() || {}
@@ -149,30 +140,39 @@ export async function sendChatMessage(
     Rule 1: You must stay in character as your witness profile describes.
     Rule 2: Do not reveal that you are an AI.
     Rule 3: Do not reveal the final solution (the culprit or the motive).
-    Rule 4: Do not reveal what other teams have asked you. You can only refer to your own memory of the conversation.
+    Rule 4: Do not directly reveal what other teams have asked you. But it is no secret other teams exists. If you are asked something similar to what other teams asked, you can refer to your previous answers. You can even mention it without revealing the actual question and the team's name.
+    
 
     ${formattedChatHistory}
     Now, Team ${teamId} asks you: "${messageText}"
   `
 
-  console.log('--- MASTER SYSTEM PROMPT ---')
-  console.log(masterPrompt)
-
-  // 3. Call the Gemini 2.5 Flash Model
+  // Call the Gemini 2.5 Flash Model
   const chatModel = getGenerativeModel(ai, {
     model: 'gemini-2.5-flash',
+    generationConfig: {},
   })
 
   let aiResponse = ''
   const result = await chatModel.generateContentStream(masterPrompt)
 
+  // Save the Player's Question to Firebase
+  const chatRef = dbRef(db, `games/${gameId}/chats/${witnessId}`)
+  const newChatMessageRef = await push(chatRef, {
+    teamId: teamId,
+    question: messageText,
+    timestamp: serverTimestamp(),
+  })
+  const newChatKey = newChatMessageRef.key
+
+  // Stream the AI's Answer to Firebase
   for await (const chunk of result.stream) {
     const chunkText = chunk.text()
     aiResponse += chunkText
     onChunk(chunkText)
   }
 
-  // 4. Save the AI's Answer to Firebase
+  // Save the AI's Answer to Firebase
   if (newChatKey) {
     const updatedChatRef = dbRef(db, `games/${gameId}/chats/${witnessId}/${newChatKey}`)
     await update(updatedChatRef, {

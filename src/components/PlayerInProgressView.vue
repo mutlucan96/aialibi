@@ -116,9 +116,13 @@ async function handleOpenChat(witnessId) {
   activeWitness.value = props.game.witnesses.find((w) => w.id === witnessId)
   if (activeWitness.value) {
     // Load chat history for this witness
-    const history = await getChatHistory(props.gameId, activeWitness.value.id, props.currentUser.uid)
+    const history = await getChatHistory(
+      props.gameId,
+      activeWitness.value.id,
+      props.currentUser.uid,
+    )
     currentChatHistory.value = []
-    history.forEach(chat => {
+    history.forEach((chat) => {
       if (chat.question) {
         currentChatHistory.value.push({
           sender: 'player',
@@ -159,8 +163,8 @@ async function handleSendMessage(messageText) {
       }
     },
     () => {
-      console.log('AI response complete.')
       isAiResponding.value = false
+      updateWitnessTalkingTo(props.gameId, activeWitness.value.id, null)
     },
   )
 }

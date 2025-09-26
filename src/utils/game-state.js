@@ -1,5 +1,5 @@
 import { db } from '@/firebase'
-import { ref as dbRef, update, serverTimestamp, get, child } from 'firebase/database'
+import { child, get, ref as dbRef, serverTimestamp, update } from 'firebase/database'
 
 /** @import {Story, GameSettings, ChatMessage} from '@/types.js' */
 
@@ -59,14 +59,12 @@ export async function getChatHistory(gameId, witnessId, teamId) {
   const snapshot = await get(chatRef)
   const chatHistory = snapshot.val() || {}
 
-  const filteredHistory = Object.keys(chatHistory)
-    .filter(key => chatHistory[key].teamId === teamId)
-    .map(key => ({
+  return Object.keys(chatHistory)
+    .filter((key) => chatHistory[key].teamId === teamId)
+    .map((key) => ({
       id: key,
-      ...chatHistory[key]
+      ...chatHistory[key],
     }))
-
-  return filteredHistory
 }
 
 /**

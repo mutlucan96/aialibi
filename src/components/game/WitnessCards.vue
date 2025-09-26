@@ -8,8 +8,12 @@
         @click.stop="!isWitnessDisabled(witness.id) && $emit('update-talking-to', witness.id)"
       >
         <v-img :src="witness.imageUrl" aspect-ratio="1"></v-img>
-        <v-card-title class="text-body-2 pa-1 text-center">{{ witness.name }}</v-card-title>
-        <v-card-subtitle class="text-caption pa-1 text-center">{{ getWitnessStatus(witness) }}</v-card-subtitle>
+        <v-card-title class="text-body-2 pa-1 text-center mb-0 pb-0">{{
+          witness.name
+        }}</v-card-title>
+        <v-card-subtitle class="text-caption pa-1 text-center mt-0 pt-0">{{
+          getWitnessStatus(witness)
+        }}</v-card-subtitle>
       </v-card>
     </v-col>
   </v-row>

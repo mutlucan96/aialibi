@@ -2,12 +2,12 @@
   <v-container fluid>
     <TimerView
       v-if="game.settings.mode === 'race'"
-      :startTime="game.startTime"
-      :duration="game.duration"
+      :startTime="game.startTime || 0"
+      :duration="game.duration || 0"
     />
     <CrimeDescription :crime="game.story.crime" />
     <WitnessesView
-      :game-id="game.id"
+      :game-id="gameId"
       :game="game"
       :mode="game.settings.mode"
       @open-chat="handleOpenChat"
@@ -15,6 +15,7 @@
       @update-talking-to="handleUpdateTalkingTo"
     />
     <ChatModal
+      v-if="activeWitness"
       ref="chatModalRef"
       v-model="isChatOpen"
       :witness="activeWitness"
@@ -143,7 +144,6 @@ async function handleOpenChat(witnessId) {
 }
 
 async function handleSendMessage(messageText) {
-  console.log('Message sent:', messageText)
   currentChatHistory.value.push({ sender: 'player', text: messageText })
   currentChatHistory.value.push({ sender: 'ai', text: '' })
   isAiResponding.value = true
@@ -153,7 +153,7 @@ async function handleSendMessage(messageText) {
     activeWitness.value.id,
     messageText,
     activeWitness.value,
-    props.currentUser.uid, // Pass the teamId here
+    props.currentUser.uid,
     (chunk) => {
       if (
         currentChatHistory.value.length > 0 &&

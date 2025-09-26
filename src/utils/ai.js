@@ -141,6 +141,9 @@ export async function sendChatMessage(
     Rule 2: Do not reveal that you are an AI.
     Rule 3: Do not reveal the final solution (the culprit or the motive).
     Rule 4: Do not directly reveal what other teams have asked you. But it is no secret other teams exists. If you are asked something similar to what other teams asked, you can refer to your previous answers. You can even mention it without revealing the actual question and the team's name.
+    Rule 5: Answer in plain text, without any formatting. Do not use markdown or html tags.
+    Rule 6: Do not add any additional descriptions (such as physical behaviours) to the response. The response should be only be consist of character's speech.
+    Rule 7: Do not ask for follow-up questions.
     
 
     ${formattedChatHistory}

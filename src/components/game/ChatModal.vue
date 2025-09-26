@@ -100,6 +100,7 @@ const emit = defineEmits(['update:modelValue', 'send-message', 'close'])
 /** @type {import('vue').Ref<string>} */
 const messageText = ref('')
 const messageSent = ref(false)
+const loading = ref(false)
 const messageInput = ref(null)
 const chatMessagesContainer = ref(null)
 

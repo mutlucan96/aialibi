@@ -1,8 +1,8 @@
 <template>
-  <v-container class="fill-height" fluid>
+  <v-container class="fill-height">
     <template v-if="game">
       <PresenterLobby v-if="game.status === 'lobby'" :gameId="gameId" :game="game" />
-      <PresenterInProgress v-else-if="game.status === 'in-progress'" />
+      <PresenterInProgress v-else-if="game.status === 'in-progress'" :game="game" />
       <PresenterFinished v-else-if="game.status === 'finished'" />
       <v-row v-else align="center" justify="center" class="fill-height">
         <v-col class="text-center">

@@ -13,6 +13,8 @@
  * @property {string} id - The unique ID of the witness.
  * @property {string} name - The name of the witness.
  * @property {string} imageUrl - The URL for the witness's image.
+ * @property {string} personality - The personality of the witness.
+ * @property {string} outfit - The outfit of the witness.
  * @property {string} talkingToTeamId - The ID of the team that is currently talking to the witness.
  */
 
@@ -51,6 +53,15 @@
  * @typedef {Object} ChatMessage
  * @property {('player'|'ai')} sender - The sender of the message.
  * @property {string} text - The content of the message.
+ */
+
+/**
+ * @typedef {Object} ChatHistoryItem
+ * @property {string} id - The unique ID of the chat message in Firebase.
+ * @property {string} teamId - The ID of the team that sent the question.
+ * @property {string} question - The question asked by the team.
+ * @property {string} [answer] - The AI's answer to the question.
+ * @property {Object} timestamp - Server timestamp object.
  */
 
 export {}

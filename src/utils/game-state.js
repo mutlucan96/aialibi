@@ -1,7 +1,7 @@
 import { db } from '@/firebase'
 import { ref as dbRef, update, serverTimestamp, get, child } from 'firebase/database'
 
-/** @import {Story, GameSettings} from '@/types.js' */
+/** @import {Story, GameSettings, ChatMessage} from '@/types.js' */
 
 /**
  * Starts the game.
@@ -45,6 +45,28 @@ export async function updateWitnessTalkingTo(gameId, witnessId, teamId) {
   } else {
     console.warn(`No witnesses found for game ${gameId}.`)
   }
+}
+
+/**
+ * Fetches the chat history for a specific witness in a game, filtered by teamId.
+ * @param {string} gameId - The ID of the game.
+ * @param {string} witnessId - The ID of the witness.
+ * @param {string} teamId - The ID of the team to filter the chat history by.
+ * @returns {Promise<ChatHistoryItem[]>} - An array of chat messages belonging to the specified team.
+ */
+export async function getChatHistory(gameId, witnessId, teamId) {
+  const chatRef = dbRef(db, `games/${gameId}/chats/${witnessId}`)
+  const snapshot = await get(chatRef)
+  const chatHistory = snapshot.val() || {}
+
+  const filteredHistory = Object.keys(chatHistory)
+    .filter(key => chatHistory[key].teamId === teamId)
+    .map(key => ({
+      id: key,
+      ...chatHistory[key]
+    }))
+
+  return filteredHistory
 }
 
 /**

@@ -33,6 +33,12 @@ import TimerView from './game/TimerView.vue'
 import CrimeDescription from './game/CrimeDescription.vue'
 import WitnessesView from './game/WitnessesView.vue'
 import ChatModal from './game/ChatModal.vue'
+import {
+  updateWitnessTalkingTo,
+  clearAllWitnessTalkingTo,
+  getChatHistory,
+} from '@/utils/game-state.js'
+import { sendChatMessage } from '@/utils/ai.js'
 
 /**
  * @import {Game} from '@/types.js'
@@ -94,20 +100,11 @@ watch(
   },
 )
 
-function handleOpenChat(witnessId) {
-  activeWitness.value = props.game.witnesses.find((w) => w.id === witnessId)
-  currentChatHistory.value = [] // Load chat history for this witness
-  isChatOpen.value = true
-}
-
 function handleOpenAccusation() {
   // Logic for making an accusation
   console.log('Make an Accusation button clicked!')
   // This would typically open another modal or navigate to an accusation view
 }
-
-import { updateWitnessTalkingTo, clearAllWitnessTalkingTo } from '@/utils/game-state.js'
-import { sendChatMessage } from '@/utils/ai.js'
 
 onMounted(async () => {
   if (props.gameId) {
@@ -115,29 +112,60 @@ onMounted(async () => {
   }
 })
 
+async function handleOpenChat(witnessId) {
+  activeWitness.value = props.game.witnesses.find((w) => w.id === witnessId)
+  if (activeWitness.value) {
+    // Load chat history for this witness
+    const history = await getChatHistory(props.gameId, activeWitness.value.id, props.currentUser.uid)
+    currentChatHistory.value = []
+    history.forEach(chat => {
+      if (chat.question) {
+        currentChatHistory.value.push({
+          sender: 'player',
+          text: chat.question,
+          timestamp: chat.timestamp,
+        })
+      }
+      if (chat.answer) {
+        currentChatHistory.value.push({
+          sender: 'ai',
+          text: chat.answer,
+          timestamp: chat.timestamp,
+        })
+      }
+    })
+  }
+  isChatOpen.value = true
+}
+
 async function handleSendMessage(messageText) {
   console.log('Message sent:', messageText)
   currentChatHistory.value.push({ sender: 'player', text: messageText })
-  currentChatHistory.value.push({ sender: 'ai', text: '' }) // Placeholder for AI response
+  currentChatHistory.value.push({ sender: 'ai', text: '' })
   isAiResponding.value = true
 
   await sendChatMessage(
+    props.gameId,
+    activeWitness.value.id,
     messageText,
+    activeWitness.value,
+    props.currentUser.uid, // Pass the teamId here
     (chunk) => {
-      // Update the last AI message with streamed chunks
-      if (currentChatHistory.value.length > 0 && currentChatHistory.value[currentChatHistory.value.length - 1].sender === 'ai') {
+      if (
+        currentChatHistory.value.length > 0 &&
+        currentChatHistory.value[currentChatHistory.value.length - 1].sender === 'ai'
+      ) {
         currentChatHistory.value[currentChatHistory.value.length - 1].text += chunk
       }
     },
     () => {
       console.log('AI response complete.')
       isAiResponding.value = false
-    }
+    },
   )
 }
 
 async function handleUpdateTalkingTo(witnessId) {
-  // Ensure game and current user are available
   if (!props.game || !props.currentUser) {
     console.error('Game or current user is not available to update talkingTo.')
     return
@@ -146,7 +174,6 @@ async function handleUpdateTalkingTo(witnessId) {
   const gameId = props.gameId
   const currentUserId = props.currentUser.uid
 
-  // Find the team ID for the current user
   const teamId = Object.keys(props.game.teams).find(
     (key) => props.game.teams[key].uid === currentUserId,
   )

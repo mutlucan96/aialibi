@@ -14,6 +14,12 @@
           "$witnessId": {
             ".write": "auth != null"
           }
+        },
+        "chats": {
+          "$witnessId": {
+            ".read": "auth != null",
+            ".write": "auth != null"
+          }
         }
       }
     }

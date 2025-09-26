@@ -1,7 +1,7 @@
-import { db } from '@/firebase'
-import { ref as dbRef, set, update } from 'firebase/database'
+import { db, auth } from '@/firebase'
+import { ref as dbRef, set, update, push, serverTimestamp, get, child } from 'firebase/database'
 
-/** @import {Game, Story, GameSettings} from '@/types.js' */
+/** @import {Game, Story, GameSettings, Witness, ChatMessage} from '@/types.js' */
 
 import { ai } from '@/firebase'
 import { getGenerativeModel, ResponseModality, Schema, GenerativeModel } from 'firebase/ai'
@@ -93,20 +93,93 @@ export async function generateStory(gameId, newSettings) {
 
 /**
  * Sends a message to the AI and streams the response.
- * @param {string} message - The message to send.
+ * @param {string} gameId - The ID of the game.
+ * @param {string} witnessId - The ID of the witness.
+ * @param {string} messageText - The player's question.
+ * @param {Witness} witnessProfile - The detailed personality profile of the witness.
+ * @param {string} teamId - The ID of the current team.
  * @param {(chunk: string) => void} onChunk - Callback for each streamed chunk.
  * @param {() => void} onComplete - Callback when the stream is complete.
  * @returns {Promise<void>}
  */
-export async function sendChatMessage(message, onChunk, onComplete) {
+export async function sendChatMessage(
+  gameId,
+  witnessId,
+  messageText,
+  witnessProfile,
+  teamId,
+  onChunk,
+  onComplete,
+) {
+  const currentUser = auth.currentUser
+  if (!currentUser) {
+    console.error('No authenticated user found.')
+    return
+  }
+
+  // 1. Save the Player's Question to Firebase
+  const chatRef = dbRef(db, `games/${gameId}/chats/${witnessId}`)
+  const newChatMessageRef = await push(chatRef, {
+    teamId: teamId,
+    question: messageText,
+    timestamp: serverTimestamp(),
+  })
+  const newChatKey = newChatMessageRef.key
+
+  // 2. Construct the Master "System Prompt"
+  const gameRef = dbRef(db, `games/${gameId}`)
+  const snapshot = await get(child(gameRef, `chats/${witnessId}`))
+  const allChatHistory = snapshot.val() || {}
+
+  let formattedChatHistory = ''
+  for (const key in allChatHistory) {
+    const chat = allChatHistory[key]
+    // Include all chat messages for the witness in the prompt for the AI
+    if (chat.question) {
+      formattedChatHistory += `Team ${chat.teamId} asked: '${chat.question}'\n`
+    }
+    if (chat.answer) {
+      formattedChatHistory += `You answered: '${chat.answer}'\n`
+    }
+  }
+
+  const masterPrompt = `
+    ${witnessProfile.personality}
+
+    Rule 1: You must stay in character as your witness profile describes.
+    Rule 2: Do not reveal that you are an AI.
+    Rule 3: Do not reveal the final solution (the culprit or the motive).
+    Rule 4: Do not reveal what other teams have asked you. You can only refer to your own memory of the conversation.
+
+    ${formattedChatHistory}
+    Now, Team ${teamId} asks you: "${messageText}"
+  `
+
+  console.log('--- MASTER SYSTEM PROMPT ---')
+  console.log(masterPrompt)
+
+  // 3. Call the Gemini 2.5 Flash Model
   const chatModel = getGenerativeModel(ai, {
     model: 'gemini-2.5-flash',
   })
-  const result = await chatModel.generateContentStream(message)
+
+  let aiResponse = ''
+  const result = await chatModel.generateContentStream(masterPrompt)
 
   for await (const chunk of result.stream) {
-    onChunk(chunk.text())
+    const chunkText = chunk.text()
+    aiResponse += chunkText
+    onChunk(chunkText)
   }
+
+  // 4. Save the AI's Answer to Firebase
+  if (newChatKey) {
+    const updatedChatRef = dbRef(db, `games/${gameId}/chats/${witnessId}/${newChatKey}`)
+    await update(updatedChatRef, {
+      answer: aiResponse,
+    })
+  }
+
   onComplete()
 }
 

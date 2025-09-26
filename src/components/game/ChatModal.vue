@@ -5,7 +5,7 @@
     @update:model-value="!loading && $emit('close')"
     max-width="600px"
   >
-    <v-card>
+    <v-card class="d-flex flex-column">
       <v-card-title class="d-flex align-center">
         <v-avatar size="48" class="mr-3">
           <v-img :src="witness.imageUrl" :alt="witness.name"></v-img>
@@ -17,7 +17,10 @@
         </v-btn>
       </v-card-title>
 
-      <v-card-text style="overflow-y: auto">
+      <v-card-text
+        style="overflow-y: auto; flex-grow: 1; min-height: 200px"
+        ref="chatMessagesContainer"
+      >
         <div v-for="(message, index) in chatHistory" :key="index" class="mb-2">
           <div :class="{ 'text-right': message.sender === 'player' }">
             <div
@@ -66,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted } from 'vue'
 
 /**
  * @import {PropType} from 'vue'
@@ -97,7 +100,17 @@ const emit = defineEmits(['update:modelValue', 'send-message', 'close'])
 /** @type {import('vue').Ref<string>} */
 const messageText = ref('')
 const messageSent = ref(false)
-const messageInput = ref(null) // Ref for the text input
+const messageInput = ref(null)
+const chatMessagesContainer = ref(null)
+
+const scrollToNewMessage = () => {
+  nextTick(() => {
+    const container = chatMessagesContainer.value?.$el || chatMessagesContainer.value
+    if (container) {
+      container.scrollTop = container.scrollHeight
+    }
+  })
+}
 
 // Reset messageSent and focus input when the modal opens/closes
 watch(
@@ -110,10 +123,26 @@ watch(
         if (messageInput.value) {
           messageInput.value.focus()
         }
+        scrollToNewMessage()
       })
     }
   },
 )
+
+// Watch for changes in chatHistory and scroll to the bottom
+watch(
+  () => props.chatHistory,
+  () => {
+    nextTick(() => {
+      scrollToNewMessage()
+    })
+  },
+  { deep: true },
+)
+
+onMounted(() => {
+  scrollToNewMessage()
+})
 
 const sendMessage = () => {
   if (messageText.value.trim()) {
@@ -128,7 +157,7 @@ const sendMessage = () => {
   padding: 8px 12px;
   border-radius: 15px;
   word-wrap: break-word;
-  display: inline-block; /* Ensures it only takes up necessary width */
+  display: inline-block;
 }
 
 .player-message {

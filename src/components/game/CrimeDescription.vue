@@ -1,6 +1,5 @@
 <template>
   <v-card class="ma-2">
-    <v-card-title>The Crime</v-card-title>
     <v-card-text>{{ crime }}</v-card-text>
   </v-card>
 </template>

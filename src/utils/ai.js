@@ -216,7 +216,7 @@ export async function evaluateAccusation(gameId, culpritId, motive) {
 
   // Use AI to evaluate the motive
   const model = getGenerativeModel(ai, {
-    model: 'gemini-2.5-pro', // Use a more capable model for evaluation
+    model: 'gemini-2.5-flash',
     generationConfig: {
       responseMimeType: 'text/plain',
     },

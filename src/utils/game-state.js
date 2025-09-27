@@ -48,6 +48,32 @@ export async function updateWitnessTalkingTo(gameId, witnessId, teamId) {
 }
 
 /**
+ * Records a correct accusation for a team in the game.
+ * @param {string} gameId - The ID of the game.
+ * @param {string} teamId - The ID of the team that made the correct accusation.
+ */
+export async function recordCorrectAccusation(gameId, teamId) {
+  const gameRef = dbRef(db, `games/${gameId}`)
+  const teamAccusationPath = `teams/${teamId}/correctAccusation`
+  await update(gameRef, {
+    [teamAccusationPath]: true,
+    status: 'finished', // End the game when a correct accusation is made
+  })
+  console.log(`Team ${teamId} made a correct accusation in game ${gameId}. Game finished.`)
+}
+
+/**
+ * Fetches a game by its ID.
+ * @param {string} gameId - The ID of the game.
+ * @returns {Promise<Game | null>} - The game object or null if not found.
+ */
+export async function getGameById(gameId) {
+  const gameRef = dbRef(db, `games/${gameId}`)
+  const snapshot = await get(gameRef)
+  return snapshot.val()
+}
+
+/**
  * Fetches the chat history for a specific witness in a game, filtered by teamId.
  * @param {string} gameId - The ID of the game.
  * @param {string} witnessId - The ID of the witness.

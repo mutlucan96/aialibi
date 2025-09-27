@@ -5,6 +5,7 @@ import { ref as dbRef, set, update, push, serverTimestamp, get, child } from 'fi
 
 import { ai } from '@/firebase'
 import { getGenerativeModel, ResponseModality, Schema, GenerativeModel } from 'firebase/ai'
+import { getGameById } from '@/utils/game-state.js'
 
 /**
  * Generates the story based on the settings.
@@ -184,6 +185,63 @@ export async function sendChatMessage(
   }
 
   onComplete()
+}
+
+/**
+ * Evaluates the player's accusation.
+ * @param {string} gameId - The ID of the game.
+ * @param {string} culpritId - The ID of the accused culprit.
+ * @param {string} motive - The player's proposed motive.
+ * @returns {Promise<boolean>} - True if the accusation is correct, false otherwise.
+ */
+export async function evaluateAccusation(gameId, culpritId, motive) {
+  const game = await getGameById(gameId)
+  if (!game || !game.story) {
+    console.error('Game or story not found for accusation evaluation.')
+    return false
+  }
+
+  const actualCulprit = game.story.culprit
+  const actualMotive = game.story.motive
+
+  const accusedWitness = game.witnesses.find((w) => w.id === culpritId)
+
+  if (!accusedWitness) {
+    console.error('Accused witness not found.')
+    return false
+  }
+
+  // Check if the accused culprit's name matches the actual culprit's name
+  const isCulpritCorrect = accusedWitness.name === actualCulprit
+
+  // Use AI to evaluate the motive
+  const model = getGenerativeModel(ai, {
+    model: 'gemini-2.5-pro', // Use a more capable model for evaluation
+    generationConfig: {
+      responseMimeType: 'text/plain',
+    },
+  })
+
+  const prompt = `
+    The crime was: "${game.story.crime}"
+    The actual culprit is "${actualCulprit}" and their motive is "${actualMotive}".
+    The player has accused "${accusedWitness.name}" with the motive: "${motive}".
+
+    Is the player's motive for the accused culprit correct or close to the actual motive?
+    Respond with ONLY "CORRECT" or "INCORRECT".
+  `
+
+  console.log('--- EVALUATING ACCUSATION PROMPT ---')
+  console.log(prompt)
+
+  const result = await model.generateContent(prompt)
+  const aiEvaluation = result.response.text().trim().toUpperCase()
+  console.log('--- ACCUSATION EVALUATION ---')
+  console.log(aiEvaluation)
+
+  const isMotiveCorrect = aiEvaluation === 'CORRECT'
+
+  return isCulpritCorrect && isMotiveCorrect
 }
 
 /**

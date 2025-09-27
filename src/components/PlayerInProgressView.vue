@@ -13,6 +13,8 @@
       @open-chat="handleOpenChat"
       @open-accusation="handleOpenAccusation"
       @update-talking-to="handleUpdateTalkingTo"
+      :is-accusation-disabled="isAccusationDisabled"
+      :accusation-cooldown-text="formattedAccusationCooldown"
     />
     <ChatModal
       v-if="activeWitness"
@@ -24,24 +26,45 @@
       @send-message="handleSendMessage"
       @close="isChatOpen = false"
     />
-    <AccusationButton @open-accusation="handleOpenAccusation" />
+    <AccusationButton
+      @open-accusation="handleOpenAccusation"
+      :is-disabled="isAccusationDisabled"
+      :cooldown-text="formattedAccusationCooldown"
+    />
+    <AccusationModal
+      v-model="isAccusationModalOpen"
+      :game="game"
+      @submit-accusation="handleAccusation"
+      @close="isAccusationModalOpen = false"
+      :is-loading="isAccusationLoading"
+    />
+
+    <v-snackbar v-model="snackbar" :timeout="5000" :color="snackbarColor" location="bottom">
+      {{ snackbarText }}
+      <template v-slot:actions>
+        <v-btn color="white" variant="text" @click="snackbar = false"> Close </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import TimerView from './game/TimerView.vue'
 import CrimeDescription from './game/CrimeDescription.vue'
 import WitnessesView from './game/WitnessesView.vue'
 import ChatModal from './game/ChatModal.vue'
 import AccusationButton from './game/AccusationButton.vue'
+import AccusationModal from './game/AccusationModal.vue'
 import {
   updateWitnessTalkingTo,
   clearAllWitnessTalkingTo,
   getChatHistory,
+  recordCorrectAccusation as recordCorrectAccusationInDb,
 } from '@/utils/game-state.js'
-import { sendChatMessage } from '@/utils/ai.js'
+import { sendChatMessage, evaluateAccusation } from '@/utils/ai.js'
+import { formatTime } from '@/utils/ui.js'
 
 /**
  * @import {Game} from '@/types.js'
@@ -78,6 +101,21 @@ const currentChatHistory = ref([])
 const chatModalRef = ref(null)
 const isAiResponding = ref(false) // New ref to track AI response status
 
+const isAccusationModalOpen = ref(false)
+const accusationCooldown = ref(0)
+let cooldownInterval = null
+const isAccusationLoading = ref(false)
+
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('error')
+
+const isAccusationDisabled = computed(() => accusationCooldown.value > 0)
+
+const formattedAccusationCooldown = computed(() => {
+  return formatTime(accusationCooldown.value)
+})
+
 // Watch for changes in isChatOpen to manage browser history and update witness talkingTo state
 watch(isChatOpen, async (newValue) => {
   if (newValue) {
@@ -104,9 +142,63 @@ watch(
 )
 
 function handleOpenAccusation() {
-  // Logic for making an accusation
-  console.log('Make an Accusation button clicked!')
-  // This would typically open another modal or navigate to an accusation view
+  isAccusationModalOpen.value = true
+}
+
+async function handleAccusation({ culprit, motive }) {
+  isAccusationLoading.value = true
+  try {
+    console.log('Accusation submitted:', { culprit, motive })
+    const isCorrect = await evaluateAccusation(props.gameId, culprit, motive)
+
+    if (isCorrect) {
+      console.log('Accusation is CORRECT!')
+      await recordCorrectAccusation()
+    } else {
+      console.log('Accusation is INCORRECT. Starting cooldown.')
+      snackbarText.value = 'Incorrect accusation! 2-minute penalty.'
+      snackbarColor.value = 'error'
+      snackbar.value = true
+      accusationCooldown.value = 120
+      if (cooldownInterval) {
+        clearInterval(cooldownInterval)
+      }
+      cooldownInterval = setInterval(() => {
+        if (accusationCooldown.value > 0) {
+          accusationCooldown.value--
+        } else {
+          clearInterval(cooldownInterval)
+          cooldownInterval = null
+        }
+      }, 1000)
+    }
+  } catch (error) {
+    console.error('Error during accusation:', error)
+    snackbarText.value = 'An error occurred during accusation.'
+    snackbarColor.value = 'error'
+    snackbar.value = true
+  } finally {
+    isAccusationLoading.value = false
+    isAccusationModalOpen.value = false
+  }
+}
+
+async function recordCorrectAccusation() {
+  if (!props.gameId || !props.currentUser) {
+    console.error('Game ID or current user is not available to record correct accusation.')
+    return
+  }
+
+  const currentUserId = props.currentUser.uid
+  const teamId = Object.keys(props.game.teams).find(
+    (key) => props.game.teams[key].uid === currentUserId,
+  )
+
+  if (teamId) {
+    await recordCorrectAccusationInDb(props.gameId, teamId)
+  } else {
+    console.error('Could not find team ID for current user:', currentUserId)
+  }
 }
 
 onMounted(async () => {

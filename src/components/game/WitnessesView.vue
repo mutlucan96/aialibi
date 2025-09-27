@@ -6,12 +6,15 @@
       :teams="game.teams"
       @open-chat="$emit('open-chat', $event)"
       @update-talking-to="$emit('update-talking-to', $event)"
+      :is-accusation-disabled="isAccusationDisabled"
+      :accusation-cooldown-text="accusationCooldownText"
     />
   </v-container>
 </template>
 
 <script setup>
 import WitnessCards from './WitnessCards.vue'
+import AccusationButton from './AccusationButton.vue'
 
 /**
  * @import {Game} from '@/types.js'
@@ -32,7 +35,17 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  isAccusationDisabled: {
+    type: Boolean,
+    default: false,
+  },
+  accusationCooldownText: {
+    type: String,
+    default: '',
+  },
 })
+
+defineEmits(['open-chat', 'open-accusation', 'update-talking-to'])
 </script>
 
 <style scoped></style>

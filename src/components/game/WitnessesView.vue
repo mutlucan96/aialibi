@@ -14,7 +14,6 @@
 
 <script setup>
 import WitnessCards from './WitnessCards.vue'
-import AccusationButton from './AccusationButton.vue'
 
 /**
  * @import {Game} from '@/types.js'

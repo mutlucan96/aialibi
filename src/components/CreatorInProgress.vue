@@ -26,7 +26,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="grey" text @click="isConfirmDialogOpen = false">Cancel</v-btn>
+          <v-btn text @click="isConfirmDialogOpen = false">Cancel</v-btn>
           <v-btn color="error" @click="confirmFinishGame">Finish</v-btn>
         </v-card-actions>
       </v-card>

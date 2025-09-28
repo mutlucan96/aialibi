@@ -37,7 +37,7 @@
     >
       <div class="text-center" style="color: #fff; text-shadow: 0 0 2px BLACK">
         <h1 class="text-h4 font-weight-bold mb-4">CASE SOLVED!</h1>
-        <p class="text-h4">You are the {{ playerTeamResult.placement }} place</p>
+        <p class="text-h2">{{ getOrdinalWord(playerTeamResult.placement) }} Place</p>
         <p class="text-h1 mt-15">{{ playerTeamResult.emoji }}</p>
         <p class="text-h3 mt-2">{{ playerTeamResult.teamName }}</p>
       </div>
@@ -49,6 +49,7 @@
 import { computed } from 'vue'
 import PlayerLobbyView from './PlayerLobbyView.vue'
 import PlayerInProgressView from './PlayerInProgressView.vue'
+import { getOrdinalWord } from '@/utils/formatters'
 import PlayerFinishedView from './PlayerFinishedView.vue'
 /**
  * Props for the PlayerView component.

@@ -9,8 +9,14 @@
         :style="{ backgroundColor: team.color }"
       >
         <v-list-item-title class="text-h5" style="color: #fff; text-shadow: 0 0 2px BLACK">
-          <v-chip v-if="team.result" density="compact" class="text-h4" size="x-large">
-            {{ team.result.placement }}
+          <v-chip
+            v-if="team.result"
+            density="compact"
+            class="text-h5 pa-1"
+            size="x-large"
+            variant="text"
+          >
+            {{ getOrdinalWord(team.result.placement) }}
           </v-chip>
           {{ team.emoji }} {{ team.name }}
         </v-list-item-title>
@@ -22,6 +28,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { getOrdinalWord } from '@/utils/formatters.js'
 
 /**
  * @import {PropType} from 'vue'

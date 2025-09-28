@@ -43,7 +43,9 @@
       absolute
     >
       <div class="text-center" style="color: #fff; text-shadow: 0 0 2px BLACK">
-        <h1 class="text-h1 font-weight-bold mb-4">{{ latestWinner.placement }}</h1>
+        <h1 class="text-h1 font-weight-bold mb-4">
+          {{ getOrdinalWord(latestWinner.placement) }}
+        </h1>
         <p class="text-h1 mt-4">{{ latestWinner.emoji }}</p>
         <p class="text-h3 mt-2">{{ latestWinner.teamName }}</p>
       </div>
@@ -66,6 +68,7 @@ import PresenterLobby from '../components/PresenterLobby.vue'
 import PresenterInProgress from '../components/PresenterInProgress.vue'
 import PresenterFinished from '../components/PresenterFinished.vue'
 import PresenterNotFound from '../components/PresenterNotFound.vue'
+import { getOrdinalWord } from '@/utils/formatters.js'
 
 const props = defineProps({
   gameId: {

@@ -10,6 +10,7 @@
       <CreatorView
         v-if="isCreator"
         :game="game"
+        :game-id="gameId"
         :game-settings="gameSettings"
         :is-generating-story="isGeneratingStory"
         :is-generating-images="isGeneratingImages"

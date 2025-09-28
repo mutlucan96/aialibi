@@ -37,6 +37,7 @@
   <CreatorInProgress
     v-else-if="game && game.status === 'in-progress'"
     :game="game"
+    :game-id="gameId"
     :witnesses="witnesses"
     :case-file="caseFile"
     :game-settings="gameSettings"
@@ -57,6 +58,11 @@ import CreatorInProgress from './CreatorInProgress.vue'
 defineProps({
   game: {
     type: /** @type {PropType<Game>} */ (Object),
+    required: true,
+  },
+  /** @type {PropType<string>} */
+  gameId: {
+    type: String,
     required: true,
   },
   gameSettings: {

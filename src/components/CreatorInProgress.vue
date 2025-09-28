@@ -9,6 +9,7 @@
       <v-col cols="12" md="6">
         <CrimeDescription :crime="game.story.crime" />
         <CrimeSolution :case-file="caseFile" />
+        <LiveChatMonitor :game="game" :game-id="gameId" class="mt-4" />
       </v-col>
 
       <!-- Right Column -->
@@ -40,6 +41,7 @@ import CrimeDescription from './game/CrimeDescription.vue'
 import CrimeSolution from './game/CrimeSolution.vue'
 import Timer from './game/TimerView.vue'
 import TeamList from './TeamList.vue'
+import LiveChatMonitor from './LiveChatMonitor.vue'
 
 /**
  * @import {PropType} from 'vue'
@@ -49,6 +51,11 @@ const props = defineProps({
   /** @type {PropType<Game>} */
   game: {
     type: Object,
+    required: true,
+  },
+  /** @type {PropType<string>} */
+  gameId: {
+    type: String,
     required: true,
   },
   /** @type {PropType<GameSettings>} */
@@ -63,6 +70,11 @@ const props = defineProps({
   },
   /** @type {PropType<Witness[]>} */
   witnesses: {
+    type: Array,
+    required: true,
+  },
+  /** @type {PropType<Team[]>} */
+  teams: {
     type: Array,
     required: true,
   },

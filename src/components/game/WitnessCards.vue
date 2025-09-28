@@ -39,6 +39,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  timerUp: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 /**
@@ -50,6 +54,8 @@ const getWitnessStatus = (witness) => {
   if (witness.talkingToTeamId && props.teams[witness.talkingToTeamId]) {
     const team = props.teams[witness.talkingToTeamId]
     return `Talking to ${team.emoji} ${team.name}`
+  } else if (!props.timerUp) {
+    return `Time's up!`
   }
   return 'Available'
 }
@@ -61,7 +67,10 @@ const getWitnessStatus = (witness) => {
  */
 const isWitnessDisabled = (witnessId) => {
   const witness = props.witnesses.find((w) => w.id === witnessId)
-  return witness && witness.talkingToTeamId !== null && witness.talkingToTeamId !== undefined
+  return (
+    !props.timerUp ||
+    (witness && witness.talkingToTeamId !== null && witness.talkingToTeamId !== undefined)
+  )
 }
 </script>
 

@@ -21,7 +21,7 @@
           class="mb-4"
         ></v-textarea>
 
-        <v-alert type="warning" dense text class="mb-4">
+        <v-alert type="warning" dense class="mb-4">
           An incorrect accusation will result in a 2-minute penalty!
         </v-alert>
       </v-card-text>

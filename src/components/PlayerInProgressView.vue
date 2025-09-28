@@ -4,6 +4,7 @@
       v-if="game.settings.mode === 'race'"
       :startTime="game.startTime || 0"
       :duration="game.duration || 0"
+      @timer-up="handleTimerUp"
     />
     <CrimeDescription :crime="game.story.crime" />
     <WitnessesView
@@ -15,6 +16,7 @@
       @update-talking-to="handleUpdateTalkingTo"
       :is-accusation-disabled="isAccusationDisabled"
       :accusation-cooldown-text="formattedAccusationCooldown"
+      :timer-up="timerUp"
     />
     <ChatModal
       v-if="activeWitness"
@@ -109,6 +111,8 @@ const isAccusationLoading = ref(false)
 const snackbar = ref(false)
 const snackbarText = ref('')
 const snackbarColor = ref('error')
+
+const timerUp = ref(false)
 
 const isAccusationDisabled = computed(() => accusationCooldown.value > 0)
 
@@ -206,6 +210,10 @@ onMounted(async () => {
     await clearAllWitnessTalkingTo(props.gameId)
   }
 })
+
+function handleTimerUp() {
+  timerUp.value = true
+}
 
 async function handleOpenChat(witnessId) {
   activeWitness.value = props.game.witnesses.find((w) => w.id === witnessId)

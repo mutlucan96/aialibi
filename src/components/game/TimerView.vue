@@ -20,6 +20,8 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['timer-up'])
+
 const timeLeft = ref(0)
 let intervalId = null
 let endTime = 0
@@ -27,6 +29,10 @@ let endTime = 0
 const calculateTimeLeft = () => {
   const remaining = (endTime - Date.now()) / 1000
   timeLeft.value = Math.max(0, Math.floor(remaining))
+  if (remaining <= 0) {
+    emit('timer-up')
+    clearInterval(intervalId)
+  }
 }
 
 const formattedTime = computed(() => {

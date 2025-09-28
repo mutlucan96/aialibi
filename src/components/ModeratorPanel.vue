@@ -106,6 +106,11 @@ const createNewGame = async () => {
     await router.push(`/game/${gameCode}`)
   } catch (error) {
     console.error('Error creating new game:', error)
+    if (error.message.includes('PERMISSION_DENIED')) {
+      alert('Permission denied. Please log out and sign in with Google.')
+      return
+    }
+    alert('Error creating new game: ' + error)
   } finally {
     isCreating.value = false
   }

@@ -1,29 +1,31 @@
 <template>
-  <v-col cols="12" md="6" style="min-height: 65vh; max-width: 500px">
-    <v-list v-if="teams.length > 0" dense rounded class="pa-2">
-      <v-list-item
-        rounded
-        v-for="team in teams"
-        :key="team.id"
-        class="ma-1"
-        :style="{ backgroundColor: team.color }"
-      >
-        <v-list-item-title class="text-h5" style="color: #fff; text-shadow: 0 0 2px BLACK">
-          <v-chip
-            v-if="team.result"
-            density="compact"
-            class="text-h5 pa-1"
-            size="x-large"
-            variant="text"
-          >
-            {{ getOrdinalWord(team.result.placement) }}
-          </v-chip>
-          {{ team.emoji }} {{ team.name }}
-        </v-list-item-title>
-      </v-list-item>
-    </v-list>
-    <p v-else class="text-h6 text-center">No teams have joined yet.</p>
-  </v-col>
+  <v-card>
+    <v-col cols="12" md="12" style="min-height: 65vh">
+      <v-list v-if="teams.length > 0" dense rounded>
+        <v-list-item
+          rounded
+          v-for="team in teams"
+          :key="team.id"
+          class="ma-1"
+          :style="{ backgroundColor: team.color }"
+        >
+          <v-list-item-title class="text-h5" style="color: #fff; text-shadow: 0 0 2px BLACK">
+            <v-chip
+              v-if="team.result"
+              density="compact"
+              class="text-h5 pa-1"
+              size="x-large"
+              variant="text"
+            >
+              {{ getOrdinalWord(team.result.placement) }}
+            </v-chip>
+            {{ team.emoji }} {{ team.name }}
+          </v-list-item-title>
+        </v-list-item>
+      </v-list>
+      <p v-else class="text-h6 text-center">No teams have joined yet.</p>
+    </v-col>
+  </v-card>
 </template>
 
 <script setup>

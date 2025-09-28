@@ -1,5 +1,9 @@
 <template>
   <v-container>
+    <v-row align="center" class="ml-0">
+      <v-btn color="error" @click="isConfirmDialogOpen = true"> Finish Game </v-btn>
+      <Timer :start-time="game.startTime" :duration="game.duration" />
+    </v-row>
     <v-row>
       <!-- Left Column -->
       <v-col cols="12" md="6">
@@ -9,23 +13,21 @@
 
       <!-- Right Column -->
       <v-col cols="12" md="6">
-        <Timer :start-time="game.startTime" :duration="game.duration" />
         <TeamList :game="game" />
-        <v-btn color="error" class="mt-4" @click="isConfirmDialogOpen = true"> Finish Game </v-btn>
       </v-col>
     </v-row>
 
     <!-- Confirmation Dialog -->
     <v-dialog v-model="isConfirmDialogOpen" max-width="500">
       <v-card>
-        <v-card-title class="headline">Confirm End Game</v-card-title>
+        <v-card-title class="headline">Finish Game</v-card-title>
         <v-card-text>
           Are you sure you want to end the game for all players? This action cannot be undone.
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="grey" text @click="isConfirmDialogOpen = false">Cancel</v-btn>
-          <v-btn color="error" @click="confirmFinishGame">Confirm & Finish</v-btn>
+          <v-btn color="error" @click="confirmFinishGame">Finish</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

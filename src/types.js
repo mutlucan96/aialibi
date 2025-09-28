@@ -78,4 +78,13 @@
  * @typedef {Object} Results
  * @property {Object.<string, Result>} results - A dictionary of results.
  */
+
+/**
+ * @typedef {Object} CaseFile
+ * @property {string} crime - The main description of the crime.
+ * @property {string} culprit - The culprit of the crime.
+ * @property {string} motive - The motive of the crime.
+ * @property {Witness[]} witnesses - An array of witness objects.
+ */
+
 export {}

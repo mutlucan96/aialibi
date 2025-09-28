@@ -18,6 +18,7 @@
       <v-col cols="12" md="6" v-if="caseFile">
         <StoryReview
           :case-file="caseFile"
+          :game="game"
           :witnesses="witnesses"
           :game-settings="gameSettings"
           :is-generating-images="isGeneratingImages"
@@ -33,22 +34,24 @@
   </div>
 
   <!-- Game In Progress View -->
-  <div v-else class="text-center pa-4">
-    <h2>Game in progress...</h2>
-    <p>The game has started. You can monitor the progress from the Presenter View.</p>
-    <v-btn @click="$emit('open-presenter-window')" color="primary" class="mt-4"
-      >Open Presenter View</v-btn
-    >
-  </div>
+  <CreatorInProgress
+    v-else-if="game && game.status === 'in-progress'"
+    :game="game"
+    :witnesses="witnesses"
+    :case-file="caseFile"
+    :game-settings="gameSettings"
+    @finish-game="$emit('finish-game')"
+  />
 </template>
 
 <script setup>
 import GameSettingsForm from './GameSettingsForm.vue'
 import StoryReview from './StoryReview.vue'
+import CreatorInProgress from './CreatorInProgress.vue'
 
 /**
  * @import {PropType} from 'vue'
- * @import {Game, GameSettings, Story, Witness} from '@/types.js'
+ * @import {Game, GameSettings, CaseFile, Witness} from '@/types.js'
  */
 
 defineProps({
@@ -65,7 +68,7 @@ defineProps({
     required: true,
   },
   caseFile: {
-    type: /** @type {PropType<Story>} */ (Object),
+    type: /** @type {PropType<CaseFile>} */ (Object),
     default: null,
   },
   witnesses: {
@@ -90,6 +93,7 @@ const emit = defineEmits([
   'remove-team',
   'update:witnesses',
   'update:showSolution',
+  'finish-game',
 ])
 
 /**

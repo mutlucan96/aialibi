@@ -64,10 +64,10 @@ import { computed, nextTick, ref, watch } from 'vue'
 
 /**
  * @import {PropType} from 'vue'
- * @import {Witness, GameSettings} from '@/types.js'
+ * @import {Witness, GameSettings, CaseFile} from '@/types.js'
  */
 const props = defineProps({
-  /** @type {PropType<Witness>} */
+  /** @type {PropType<CaseFile>} */
   caseFile: {
     type: Object,
     required: true,
@@ -84,11 +84,13 @@ const props = defineProps({
   },
   isGeneratingImages: {
     type: Boolean,
-    required: true,
+    required: false,
+    default: false,
   },
   showSolution: {
     type: Boolean,
-    required: true,
+    required: false,
+    default: false,
   },
 })
 

@@ -55,7 +55,10 @@ import { joinLobby, removeTeam } from '@/utils/lobby.js'
 import { startGame } from '@/utils/game-state.js'
 import { openPresenterWindow } from '@/utils/ui.js'
 
-/** @import {Game, Story, GameSettings, Witness} from '@/types.js' */
+/**
+ * @import {Game, CaseFile, GameSettings, Witness} from '@/types.js'
+ * @import {Ref} from 'vue'
+ * */
 
 // Props
 const props = defineProps({
@@ -74,9 +77,9 @@ const teamName = ref('')
 const isJoined = ref(false)
 
 const isGeneratingImages = ref(false)
-/** @type {ref<Story | null>} */
+/** @type {Ref<CaseFile | null>} */
 const caseFile = ref(null)
-/** @type {import('vue').Ref<Witness[]>} */
+/** @type {Ref<Witness[]>} */
 const witnesses = ref([])
 const showSolution = ref(false) // For Race Mode
 
@@ -115,9 +118,9 @@ function fetchGameData() {
       }
 
       if (game.value) {
-        Object.assign(game.value, data);
+        Object.assign(game.value, data)
       } else {
-        game.value = data;
+        game.value = data
       }
       witnesses.value = data.witnesses
 

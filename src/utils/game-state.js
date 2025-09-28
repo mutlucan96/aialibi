@@ -22,6 +22,17 @@ export async function startGame(gameId, caseFile, witnesses, gameSettings) {
 }
 
 /**
+ * Finishes the game.
+ * @param {string} gameId - The ID of the game.
+ */
+export async function finishGame(gameId) {
+  const gameRef = dbRef(db, `games/${gameId}`)
+  await update(gameRef, {
+    status: 'finished',
+  })
+}
+
+/**
  * Updates which team a witness is currently talking to.
  * @param {string} gameId - The ID of the game.
  * @param {string} witnessId - The ID of the witness (the 'id' property within the witness object).

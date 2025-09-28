@@ -103,4 +103,8 @@ const emit = defineEmits([
 function onGenerateStory(localGameSettings) {
   emit('generate-story', localGameSettings)
 }
+
+function onFinishGame() {
+  emit('finish-game')
+}
 </script>

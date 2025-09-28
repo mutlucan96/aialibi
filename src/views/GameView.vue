@@ -21,6 +21,7 @@
         @start-game="handleStartGame"
         @open-presenter-window="handleOpenPresenterWindow"
         @remove-team="handleRemoveTeam"
+        @finish-game="handleFinishGame"
         @update:witnesses="witnesses = $event"
         @update:show-solution="showSolution = $event"
       />
@@ -52,7 +53,7 @@ import CreatorView from '@/components/CreatorView.vue'
 import PlayerView from '@/components/PlayerView.vue'
 import { generateImages, generateStory } from '@/utils/ai.js'
 import { joinLobby, removeTeam } from '@/utils/lobby.js'
-import { startGame } from '@/utils/game-state.js'
+import { finishGame, startGame } from '@/utils/game-state.js'
 import { openPresenterWindow } from '@/utils/ui.js'
 
 /**
@@ -179,6 +180,10 @@ async function handleGenerateImages() {
 
 async function handleStartGame() {
   await startGame(props.gameId, caseFile.value, witnesses.value, gameSettings)
+}
+
+async function handleFinishGame() {
+  await finishGame(props.gameId)
 }
 
 function handleOpenPresenterWindow() {

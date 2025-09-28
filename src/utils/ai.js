@@ -227,7 +227,7 @@ export async function evaluateAccusation(gameId, culpritId, motive) {
     The actual culprit is "${actualCulprit}" and their motive is "${actualMotive}".
     The player has accused "${accusedWitness.name}" with the motive: "${motive}".
 
-    Is the player's motive for the accused culprit correct or close to the actual motive?
+    Is the player's motive for the accused culprit correct or close enough to the actual motive?
     Respond with ONLY "CORRECT" or "INCORRECT".
   `
 

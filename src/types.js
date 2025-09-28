@@ -47,6 +47,7 @@
  * @property {number} startTime
  * @property {number} duration
  * @property {Team[]} teams
+ * @property {Results} results
  */
 
 /**
@@ -64,4 +65,17 @@
  * @property {Object} timestamp - Server timestamp object.
  */
 
+/**
+ * @typedef {Object} Result
+ * @property {number} placement - The placement of the team.
+ * @property {string} teamName - The name of the team.
+ * @property {string} color - The color of the team.
+ * @property {string} emoji - The emoji of the team.
+ * @property {number} finishTime - The finish time of the team.
+ */
+
+/**
+ * @typedef {Object} Results
+ * @property {Object.<string, Result>} results - A dictionary of results.
+ */
 export {}

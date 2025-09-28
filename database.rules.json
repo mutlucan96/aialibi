@@ -20,6 +20,12 @@
             ".read": "auth != null",
             ".write": "auth != null"
           }
+        },
+        "results": {
+          "$witnessId": {
+            ".read": "auth != null",
+            ".write": "auth != null"
+          }
         }
       }
     }

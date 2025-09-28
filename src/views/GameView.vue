@@ -114,7 +114,11 @@ function fetchGameData() {
         data.witnesses = []
       }
 
-      game.value = data
+      if (game.value) {
+        Object.assign(game.value, data);
+      } else {
+        game.value = data;
+      }
       witnesses.value = data.witnesses
 
       if (data.settings) {

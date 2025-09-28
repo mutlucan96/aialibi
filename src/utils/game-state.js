@@ -54,12 +54,39 @@ export async function updateWitnessTalkingTo(gameId, witnessId, teamId) {
  */
 export async function recordCorrectAccusation(gameId, teamId) {
   const gameRef = dbRef(db, `games/${gameId}`)
-  const teamAccusationPath = `teams/${teamId}/correctAccusation`
-  await update(gameRef, {
-    [teamAccusationPath]: true,
-    status: 'finished', // End the game when a correct accusation is made
-  })
-  console.log(`Team ${teamId} made a correct accusation in game ${gameId}. Game finished.`)
+  const gameSnapshot = await get(gameRef)
+  const gameData = gameSnapshot.val()
+
+  if (!gameData) {
+    console.error(`Game with ID ${gameId} not found.`)
+    return
+  }
+
+  const team = gameData.teams[teamId]
+  if (!team) {
+    console.error(`Team with ID ${teamId} not found in game ${gameId}.`)
+    return
+  }
+
+  const resultsRef = child(gameRef, 'results')
+  const resultsSnapshot = await get(resultsRef)
+  const existingResults = resultsSnapshot.val() || {}
+  const placement = Object.keys(existingResults).length + 1
+
+  const result = {
+    teamName: team.name,
+    color: team.color,
+    emoji: team.emoji,
+    finishTime: serverTimestamp(),
+    placement: placement,
+  }
+
+  const updates = {}
+  updates[`/games/${gameId}/results/${teamId}`] = result
+  updates[`/games/${gameId}/teams/${teamId}/correctAccusation`] = true
+
+  await update(dbRef(db), updates)
+  console.log(`Team ${teamId} made a correct accusation in game ${gameId}.`)
 }
 
 /**

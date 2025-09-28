@@ -25,10 +25,28 @@
     <div v-else-if="game.status === 'finished'">
       <PlayerFinishedView />
     </div>
+
+    <!-- Winner Overlay -->
+    <v-overlay
+      v-if="hasPlayerWon"
+      :model-value="hasPlayerWon"
+      class="align-center justify-center"
+      :style="{ backgroundColor: playerTeamResult.color }"
+      persistent
+      absolute
+    >
+      <div class="text-center" style="color: #fff; text-shadow: 0 0 2px BLACK">
+        <h1 class="text-h4 font-weight-bold mb-4">CASE SOLVED!</h1>
+        <p class="text-h4">You are the {{ playerTeamResult.placement }} place</p>
+        <p class="text-h1 mt-15">{{ playerTeamResult.emoji }}</p>
+        <p class="text-h3 mt-2">{{ playerTeamResult.teamName }}</p>
+      </div>
+    </v-overlay>
   </v-container>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import PlayerLobbyView from './PlayerLobbyView.vue'
 import PlayerInProgressView from './PlayerInProgressView.vue'
 import PlayerFinishedView from './PlayerFinishedView.vue'
@@ -72,6 +90,24 @@ const props = defineProps({
  * @type {(eventName: 'join-lobby', teamName: string) => void}
  */
 const emit = defineEmits(['join-lobby'])
+
+const playerTeamId = computed(() => {
+  if (!props.currentUser || !props.game || !props.game.teams) return null
+  const teamEntry = Object.entries(props.game.teams).find(
+    ([, team]) => team.uid === props.currentUser.uid,
+  )
+  return teamEntry ? teamEntry[0] : null
+})
+
+const hasPlayerWon = computed(() => {
+  if (!playerTeamId.value || !props.game || !props.game.results) return false
+  return !!props.game.results[playerTeamId.value]
+})
+
+const playerTeamResult = computed(() => {
+  if (!playerTeamId.value || !props.game || !props.game.results) return null
+  return props.game.results[playerTeamId.value]
+})
 
 function handleJoinLobby(teamName) {
   emit('join-lobby', teamName)

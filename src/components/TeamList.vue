@@ -8,9 +8,12 @@
         class="ma-1"
         :style="{ backgroundColor: team.color }"
       >
-        <v-list-item-title class="text-h5" style="color: #fff; text-shadow: 0 0 2px BLACK"
-          >{{ team.emoji }} {{ team.name }}</v-list-item-title
-        >
+        <v-list-item-title class="text-h5" style="color: #fff; text-shadow: 0 0 2px BLACK">
+          <v-chip v-if="team.result" density="compact" class="text-h4" size="x-large">
+            {{ team.result.placement }}
+          </v-chip>
+          {{ team.emoji }} {{ team.name }}
+        </v-list-item-title>
       </v-list-item>
     </v-list>
     <p v-else class="text-h6 text-center">No teams have joined yet.</p>
@@ -36,10 +39,20 @@ const teams = computed(() => {
   if (!props.game || !props.game.teams) {
     return []
   }
-  return Object.entries(props.game.teams).map(([id, teamData]) => ({
+  const allTeams = Object.entries(props.game.teams).map(([id, teamData]) => ({
     id,
     ...teamData,
+    result: props.game.results[id] || null,
   }))
+
+  return allTeams.sort((a, b) => {
+    if (a.result && !b.result) return -1
+    if (!a.result && b.result) return 1
+    if (a.result && b.result) {
+      return a.result.placement - b.result.placement
+    }
+    return a.name.localeCompare(b.name)
+  })
 })
 </script>
 

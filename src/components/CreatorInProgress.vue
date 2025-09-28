@@ -20,7 +20,7 @@
     <!-- Confirmation Dialog -->
     <v-dialog v-model="isConfirmDialogOpen" max-width="500">
       <v-card>
-        <v-card-title class="headline">Finish Game</v-card-title>
+        <v-card-title>Finish Game</v-card-title>
         <v-card-text>
           Are you sure you want to end the game for all players? This action cannot be undone.
         </v-card-text>

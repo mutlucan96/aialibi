@@ -23,7 +23,7 @@
     </div>
     <!-- Finished View for Player -->
     <div v-else-if="game.status === 'finished'">
-      <PlayerFinishedView />
+      <PlayerFinishedView :game="game" :case-file="caseFile" />
     </div>
 
     <!-- Winner Overlay -->
@@ -82,6 +82,10 @@ const props = defineProps({
   currentUser: {
     type: Object,
     required: false,
+  },
+  /** @type {PropType<CaseFile>} */
+  caseFile: {
+    type: Object,
   },
 })
 

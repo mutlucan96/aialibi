@@ -38,9 +38,11 @@ import TeamList from './TeamList.vue'
 /**
  * PresenterInProgress component displays the game in progress for the presenter.
  * It assembles Timer, CrimeDescription, WitnessesView, and TeamList components.
- * @property {object} game - The game object containing all necessary data.
+ * @import {PropType} from 'vue'
+ * @import {Game} from '@/types.js'
  */
 const props = defineProps({
+  /** @type {PropType<Game>} */
   game: {
     type: Object,
     required: true,

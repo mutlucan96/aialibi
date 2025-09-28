@@ -23,6 +23,7 @@
         @open-presenter-window="handleOpenPresenterWindow"
         @remove-team="handleRemoveTeam"
         @finish-game="handleFinishGame"
+        @remove-game="handleRemoveGame"
         @update:witnesses="witnesses = $event"
         @update:show-solution="showSolution = $event"
       />
@@ -30,6 +31,7 @@
         v-else-if="game"
         :game-id="gameId"
         :game="game"
+        :case-file="caseFile"
         :team-name="teamName"
         :is-joined="isJoined"
         :current-user="currentUser"
@@ -54,8 +56,9 @@ import CreatorView from '@/components/CreatorView.vue'
 import PlayerView from '@/components/PlayerView.vue'
 import { generateImages, generateStory } from '@/utils/ai.js'
 import { joinLobby, removeTeam } from '@/utils/lobby.js'
-import { finishGame, startGame } from '@/utils/game-state.js'
+import { finishGame, removeGame, startGame } from '@/utils/game-state.js'
 import { openPresenterWindow } from '@/utils/ui.js'
+import router from '@/router/index.js'
 
 /**
  * @import {Game, CaseFile, GameSettings, Witness} from '@/types.js'
@@ -185,6 +188,11 @@ async function handleStartGame() {
 
 async function handleFinishGame() {
   await finishGame(props.gameId)
+}
+
+async function handleRemoveGame() {
+  await removeGame(props.gameId)
+  await router.push('/')
 }
 
 function handleOpenPresenterWindow() {

@@ -22,7 +22,6 @@ import WitnessCards from './WitnessCards.vue'
 const props = defineProps({
   gameId: {
     type: String,
-    required: true,
   },
   /** @type {PropType<Game>} */
   game: {
@@ -32,11 +31,9 @@ const props = defineProps({
 
   mode: {
     type: String,
-    required: true,
   },
   isAccusationDisabled: {
     type: Boolean,
-    default: false,
   },
   accusationCooldownText: {
     type: String,

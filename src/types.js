@@ -41,11 +41,12 @@
  * @property {number} createdAt - The timestamp when the game was created.
  * @property {string} joinCode - The 4-digit code for players to join a race mode game.
  * @property {Object.<string, Team>} teams - A dictionary of teams that have joined the game.
- * @property {Story} [story] - The generated story object for the game.
+ * @property {CaseFile} [caseFile] - The generated case file for the game.
+ * @property {Story} [story] - The generated story for the game.
  * @property {GameSettings} [settings] - The settings object for the game.
  * @property {Witness[]} witnesses
- * @property {number} startTime
- * @property {number} duration
+ * @property {number} [startTime]
+ * @property {number} [duration]
  * @property {Team[]} teams
  * @property {Results} results
  */

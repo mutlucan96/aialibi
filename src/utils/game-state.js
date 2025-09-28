@@ -1,5 +1,5 @@
 import { db } from '@/firebase'
-import { child, get, ref as dbRef, serverTimestamp, update } from 'firebase/database'
+import { child, get, ref as dbRef, remove, serverTimestamp, update } from 'firebase/database'
 
 /** @import {Story, GameSettings, ChatMessage} from '@/types.js' */
 
@@ -30,6 +30,15 @@ export async function finishGame(gameId) {
   await update(gameRef, {
     status: 'finished',
   })
+}
+
+/**
+ * Removes the game from the database.
+ * @param {string} gameId - The ID of the game.
+ */
+export async function removeGame(gameId) {
+  const gameRef = dbRef(db, `games/${gameId}`)
+  await remove(gameRef)
 }
 
 /**

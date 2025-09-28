@@ -38,17 +38,27 @@
     v-else-if="game && game.status === 'in-progress'"
     :game="game"
     :game-id="gameId"
+    :teams="game.teams"
     :witnesses="witnesses"
     :case-file="caseFile"
     :game-settings="gameSettings"
     @finish-game="$emit('finish-game')"
   />
+  <!-- Game Finished View -->
+  <v-container v-else-if="game && game.status === 'finished'">
+    <v-card max-width="600" class="mx-auto text-center">
+      <v-card-title>Game Finished</v-card-title>
+      <v-btn color="error" @click="$emit('remove-game')">Remove Game</v-btn>
+      <TeamList :game="game" />
+    </v-card>
+  </v-container>
 </template>
 
 <script setup>
 import GameSettingsForm from './GameSettingsForm.vue'
 import StoryReview from './StoryReview.vue'
 import CreatorInProgress from './CreatorInProgress.vue'
+import TeamList from './TeamList.vue'
 
 /**
  * @import {PropType} from 'vue'
@@ -108,9 +118,5 @@ const emit = defineEmits([
  */
 function onGenerateStory(localGameSettings) {
   emit('generate-story', localGameSettings)
-}
-
-function onFinishGame() {
-  emit('finish-game')
 }
 </script>

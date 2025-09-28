@@ -12,6 +12,7 @@
       <PresenterFinished
         v-else-if="game.status === 'finished'"
         :game="game"
+        :case-file="game.story"
         :teams="game.teams"
         :results="game.results"
       />
@@ -116,12 +117,6 @@ onUnmounted(() => {
 watch(
   () => game.value?.results,
   (newResults, oldResults) => {
-    console.log(
-      'PresenterView: game.value.results changed. New results:',
-      newResults,
-      'Old results:',
-      oldResults,
-    )
     if (
       newResults &&
       (!oldResults || Object.keys(newResults).length > Object.keys(oldResults).length)

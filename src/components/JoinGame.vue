@@ -7,6 +7,7 @@
         label="Enter Game Code"
         prepend-inner-icon="mdi-key-variant"
         variant="outlined"
+        @keydown.enter="joinGame"
       ></v-text-field>
     </v-card-text>
     <v-card-actions>
@@ -24,14 +25,17 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 const gameCode = ref('');
+const router = useRouter();
 
 /**
- * @description Logs the entered game code to the console.
+ * @description Navigates to the game view with the entered game code.
  */
 const joinGame = () => {
-  console.log('Joining game with code:', gameCode.value);
-  // Navigation logic will be added later
+  if (gameCode.value.trim()) {
+    router.push({ name: 'game', params: { gameId: gameCode.value.trim() } });
+  }
 };
 </script>

@@ -49,17 +49,17 @@ export async function generateStory(gameId, newSettings) {
     Game Settings:
     - Language Level: CEFR ${newSettings.languageLevel}
     - Target Age: ${newSettings.targetAge || 'any'}
+    - Duration: ${newSettings.timeLimit || 'unlimited'} minutes
     - Target Vocabulary: ${newSettings.targetVocabulary || 'none'}
     - Additional Info: ${newSettings.theme || 'none'}
-
     Please return ONLY a valid JSON object with the following structure:
     {
-      "crime": "A detailed description of the crime that was committed. It should also introduce witnesses since players will not see witness profiles.",
+      "crime": "A detailed description of the crime that was committed. It should also introduce witnesses since players will not see witness profiles. Also include some clues here.",
       "culprit": "The name of the witness who is the culprit.",
       "motive": "The culprit's reason for committing the crime.",
       "witnesses": [
         {
-          "name": "Witness Name (max 2 words, excluding (the, Mr, Ms, Dr, etc...))",
+          "name": "Witness Name (max 2-3 words)",
           "personality": "A very detailed personality profile for the witness. This will be used by another AI to role-play as this character. Include their background, their relationship to the crime/victim, their personality, secrets, clues and how they might behave during an interrogation. This needs to be rich enough for an AI to generate dialogue from. It should include information about other witnesses and how they know them. It should also include possible questions that the player might ask and how they might answer, to help them solve the case.",
           "outfit": "A purely visual description of the character's appearance, suitable for an image generation prompt. If related (not necessary), include the character's gender, age, personality, expression, and any other relevant details that relates to physical appearance."
         },

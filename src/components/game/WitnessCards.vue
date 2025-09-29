@@ -54,7 +54,7 @@ const getWitnessStatus = (witness) => {
   if (witness.talkingToTeamId && props.teams[witness.talkingToTeamId]) {
     const team = props.teams[witness.talkingToTeamId]
     return `Talking to ${team.emoji} ${team.name}`
-  } else if (!props.timerUp) {
+  } else if (props.timerUp) {
     return `Time's up!`
   }
   return 'Available'
@@ -68,7 +68,7 @@ const getWitnessStatus = (witness) => {
 const isWitnessDisabled = (witnessId) => {
   const witness = props.witnesses.find((w) => w.id === witnessId)
   return (
-    !props.timerUp ||
+    props.timerUp ||
     (witness && witness.talkingToTeamId !== null && witness.talkingToTeamId !== undefined)
   )
 }

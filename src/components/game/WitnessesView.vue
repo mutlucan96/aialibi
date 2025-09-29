@@ -4,6 +4,7 @@
       :game-id="gameId"
       :witnesses="game.witnesses"
       :teams="game.teams"
+      :timer-up="timerUp"
       @open-chat="$emit('open-chat', $event)"
       @update-talking-to="$emit('update-talking-to', $event)"
       :is-accusation-disabled="isAccusationDisabled"
@@ -38,6 +39,10 @@ const props = defineProps({
   accusationCooldownText: {
     type: String,
     default: '',
+  },
+  timerUp: {
+    type: Boolean,
+    default: false,
   },
 })
 

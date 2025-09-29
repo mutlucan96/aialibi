@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container style="max-width: 1200px">
     <TimerView
       v-if="game.settings.mode === 'race'"
       :startTime="game.startTime || 0"

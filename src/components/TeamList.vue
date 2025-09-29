@@ -48,10 +48,11 @@ const teams = computed(() => {
   if (!props.game || !props.game.teams) {
     return []
   }
+  const gameResults = props.game.results || {}
   const allTeams = Object.entries(props.game.teams).map(([id, teamData]) => ({
     id,
     ...teamData,
-    result: props.game.results[id] || null,
+    result: gameResults[id] || null,
   }))
 
   return allTeams.sort((a, b) => {

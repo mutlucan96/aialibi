@@ -42,7 +42,7 @@ const formattedTime = computed(() => {
 })
 
 onMounted(() => {
-  endTime = props.startTime + props.duration * 1000
+  endTime = props.startTime + props.duration * 60 * 1000
   calculateTimeLeft()
   intervalId = setInterval(calculateTimeLeft, 1000)
 })

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="game && game.status === 'lobby'">
+  <v-container v-if="game && game.status === 'lobby'">
     <v-row>
       <!-- Left Column: Game Settings Form (Always Visible) -->
       <v-col cols="12" md="6">
@@ -31,7 +31,7 @@
         />
       </v-col>
     </v-row>
-  </div>
+  </v-container>
 
   <!-- Game In Progress View -->
   <CreatorInProgress

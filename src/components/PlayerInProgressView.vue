@@ -252,6 +252,7 @@ async function handleSendMessage(messageText) {
 
   await sendChatMessage(
     props.gameId,
+    props.game,
     activeWitness.value.id,
     messageText,
     activeWitness.value,

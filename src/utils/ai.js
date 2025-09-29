@@ -4,7 +4,7 @@ import { ref as dbRef, set, update, push, serverTimestamp, get, child } from 'fi
 /** @import {Game, Story, GameSettings, Witness, ChatMessage} from '@/types.js' */
 
 import { ai } from '@/firebase'
-import { getGenerativeModel, ResponseModality, Schema, GenerativeModel } from 'firebase/ai'
+import { getGenerativeModel, ResponseModality, Schema } from 'firebase/ai'
 import { getGameById } from '@/utils/game-state.js'
 
 /**
@@ -37,7 +37,7 @@ export async function generateStory(gameId, newSettings) {
   })
 
   const model = getGenerativeModel(ai, {
-    model: 'gemini-2.5-pro',
+    model: 'gemini-2.5-flash',
     generationConfig: {
       responseMimeType: 'application/json',
       responseSchema: storySchema,
@@ -47,27 +47,25 @@ export async function generateStory(gameId, newSettings) {
   const prompt = `
     You are a master detective story writer. Based on the following game settings, create a compelling mystery case file.
     Game Settings:
-    - Mode: ${newSettings.mode}
-    - Language Level: ${newSettings.languageLevel}
+    - Language Level: CEFR ${newSettings.languageLevel}
     - Target Age: ${newSettings.targetAge || 'any'}
     - Target Vocabulary: ${newSettings.targetVocabulary || 'none'}
-    - Theme: ${newSettings.theme || 'classic detective story'}
+    - Additional Info: ${newSettings.theme || 'none'}
 
     Please return ONLY a valid JSON object with the following structure:
     {
-      "crime": "A detailed description of the crime that was committed.",
-      "clue": "A single, crucial clue that(can help solve the case. This clue will be revealed later in the game.",
+      "crime": "A detailed description of the crime that was committed. It should also introduce witnesses since players will not see witness profiles.",
       "culprit": "The name of the witness who is the culprit.",
       "motive": "The culprit's reason for committing the crime.",
       "witnesses": [
         {
-          "name": "Witness Name 1",
-          "personality": "A very detailed personality profile for the witness. This will be used by another AI to role-play as this character. Include their background, their relationship to the crime/victim, their personality, secrets, and how they might behave during an interrogation. This needs to be rich enough for an AI to generate dialogue from.",
-          "outfit": "A short (10-15 words), purely visual description of the character's appearance, suitable for an image generation prompt. Example: 'A friendly school gardener with a big hat and a watering can'."
+          "name": "Witness Name (max 2 words, excluding (the, Mr, Ms, Dr, etc...))",
+          "personality": "A very detailed personality profile for the witness. This will be used by another AI to role-play as this character. Include their background, their relationship to the crime/victim, their personality, secrets, clues and how they might behave during an interrogation. This needs to be rich enough for an AI to generate dialogue from. It should include information about other witnesses and how they know them. It should also include possible questions that the player might ask and how they might answer, to help them solve the case.",
+          "outfit": "A purely visual description of the character's appearance, suitable for an image generation prompt. If related (not necessary), include the character's gender, age, personality, expression, and any other relevant details that relates to physical appearance."
         },
-        { "name": "Witness Name 2", "personality": "...", "outfit": "..." },
-        { "name": "Witness Name 3", "personality": "...", "outfit": "..." },
-        { "name": "Witness Name 4", "personality": "...", "outfit": "..." }
+        { "name": "...", "personality": "...", "outfit": "..." },
+        { "name": "...", "personality": "...", "outfit": "..." },
+        { "name": "...", "personality": "...", "outfit": "..." }
       ]
     }
     Ensure the culprit's name is one of the four witness names.
@@ -95,6 +93,7 @@ export async function generateStory(gameId, newSettings) {
 /**
  * Sends a message to the AI and streams the response.
  * @param {string} gameId - The ID of the game.
+ * @param {Game} game - The game settings.
  * @param {string} witnessId - The ID of the witness.
  * @param {string} messageText - The player's question.
  * @param {Witness} witnessProfile - The detailed personality profile of the witness.
@@ -105,6 +104,7 @@ export async function generateStory(gameId, newSettings) {
  */
 export async function sendChatMessage(
   gameId,
+  game,
   witnessId,
   messageText,
   witnessProfile,
@@ -136,7 +136,9 @@ export async function sendChatMessage(
   }
 
   const masterPrompt = `
-    ${witnessProfile.personality}
+    You are a witness in a detective game. 
+    The game is about ${game.story.crimeDescription}.
+    Your name is ${witnessProfile.name}. You are in this role: ${witnessProfile.personality}
 
     Rule 1: You must stay in character as your witness profile describes.
     Rule 2: Do not reveal that you are an AI.
@@ -145,6 +147,8 @@ export async function sendChatMessage(
     Rule 5: Answer in plain text, without any formatting. Do not use markdown or html tags.
     Rule 6: Do not add any additional descriptions (such as physical behaviours) to the response. The response should be only be consist of character's speech.
     Rule 7: Do not ask for follow-up questions.
+    Rule 8: If defined, you appeal to ${game.settings.targetAge || 'any'} with CEFR ${game.settings.languageLevel || 'any'} language level.
+    Rule 9: If defined, include these vocabulary if related: ${game.settings.targetVocabulary}.
     
 
     ${formattedChatHistory}

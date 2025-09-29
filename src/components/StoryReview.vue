@@ -44,7 +44,9 @@
       @click="$emit('generate-images')"
       :disabled="isGeneratingImages"
       :loading="isGeneratingImages"
+      size="large"
       color="secondary"
+      class="mr-2"
     >
       Generate Images
     </v-btn>

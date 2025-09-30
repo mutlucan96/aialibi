@@ -102,7 +102,7 @@ const gameSettings = reactive({
   targetVocabulary: '',
   theme: '',
   targetAge: null,
-  timeLimit: 15,
+  timeLimit: 30,
 })
 
 let gameListener = null

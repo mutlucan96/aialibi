@@ -35,7 +35,7 @@
 
   <!-- Game In Progress View -->
   <CreatorInProgress
-    v-else-if="game && game.status === 'in-progress'"
+    v-else-if="game && game.status === 'in-progress' && game.settings.mode === 'race'"
     :game="game"
     :game-id="gameId"
     :teams="game.teams"
@@ -44,20 +44,33 @@
     :game-settings="gameSettings"
     @finish-game="$emit('finish-game')"
   />
+  <ClassicModeView
+    v-else-if="game && game.status === 'in-progress' && game.settings.mode === 'classic'"
+    :game="game"
+    @give-up="$emit('finish-game')"
+    @delete-game="$emit('delete-game')"
+  />
   <!-- Game Finished View -->
-  <v-container v-else-if="game && game.status === 'finished'">
+  <v-container v-else-if="game && game.status === 'finished' && game.settings.mode === 'race'">
     <v-card max-width="600" class="mx-auto text-center">
       <v-card-title>Game Finished</v-card-title>
       <v-btn color="error" @click="$emit('remove-game')">Remove Game</v-btn>
       <TeamList :game="game" />
     </v-card>
   </v-container>
+  <ClassicModeView
+    v-else-if="game && game.status === 'finished' && game.settings.mode === 'classic'"
+    :game="game"
+    @give-up="$emit('finish-game')"
+    @delete-game="$emit('delete-game')"
+  />
 </template>
 
 <script setup>
 import GameSettingsForm from './GameSettingsForm.vue'
 import StoryReview from './StoryReview.vue'
 import CreatorInProgress from './CreatorInProgress.vue'
+import ClassicModeView from './ClassicModeView.vue'
 import TeamList from './TeamList.vue'
 
 /**
@@ -110,6 +123,7 @@ const emit = defineEmits([
   'update:witnesses',
   'update:showSolution',
   'finish-game',
+  'delete-game',
 ])
 
 /**

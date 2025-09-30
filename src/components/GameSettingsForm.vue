@@ -108,7 +108,7 @@
 import { reactive, watch, ref } from 'vue'
 
 /**
- * @import {PropType} from 'vue'
+ * @import {PropType, Reactive, Ref} from 'vue'
  * @import {Game, GameSettings} from '@/types.js'
  */
 const props = defineProps({

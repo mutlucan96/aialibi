@@ -23,7 +23,8 @@
         @open-presenter-window="handleOpenPresenterWindow"
         @remove-team="handleRemoveTeam"
         @finish-game="handleFinishGame"
-        @remove-game="handleRemoveGame"
+        @remove-game="handleDeleteGame"
+        @delete-game="handleDeleteGame"
         @update:witnesses="witnesses = $event"
         @update:show-solution="showSolution = $event"
       />
@@ -190,7 +191,11 @@ async function handleFinishGame() {
   await finishGame(props.gameId)
 }
 
-async function handleRemoveGame() {
+/**
+ * Deletes the current game session from Firebase and navigates to the homepage.
+ * This function is called when the creator chooses to delete the game.
+ */
+async function handleDeleteGame() {
   await removeGame(props.gameId)
   await router.push('/')
 }

@@ -6,6 +6,8 @@ Welcome to **AI Alibi**! This is an interactive, multiplayer whodunnit game desi
 
 This project is being developed as part of "Digital Tools and Technology in the Young Learners' EFL Classroom" course at the University of Augsburg.
 
+** Live Demo ** [https://alibi.mutlucan.dev](alibi.mutlucan.dev)
+
 ## Core Concept
 
 The game challenges students (as "detectives") to solve a simple, age-appropriate mystery. To do this, they must collaborate as a team to question a cast of four unique witnesses. The witnesses are all powered by a generative AI (Google's Gemini API), which responds in character and provides clues (and red herrings!) based on a secret, pre-generated story.

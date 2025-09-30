@@ -6,7 +6,7 @@ Welcome to **AI Alibi**! This is an interactive, multiplayer whodunnit game desi
 
 This project is being developed as part of "Digital Tools and Technology in the Young Learners' EFL Classroom" course at the University of Augsburg.
 
-** Live Demo ** [https://alibi.mutlucan.dev](alibi.mutlucan.dev)
+**Live Demo:** [alibi.mutlucan.dev](https://alibi.mutlucan.dev)
 
 ## Core Concept
 

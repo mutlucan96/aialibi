@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue';
-import GameView from '../views/GameView.vue';
-import PresenterView from '../views/PresenterView.vue';
+import HomeView from '../views/HomeView.vue'
+import GameView from '../views/GameView.vue'
+import PresenterView from '../views/PresenterView.vue'
+import ImpressumView from '@/views/ImpressumView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,6 +23,11 @@ const router = createRouter({
       name: 'presenter',
       component: PresenterView,
       props: true,
+    },
+    {
+      path: '/imp',
+      name: 'impressum',
+      component: ImpressumView,
     },
   ],
 })

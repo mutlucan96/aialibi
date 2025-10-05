@@ -97,12 +97,15 @@ let statusInterval = null
 const storyGenerationSteps = [
   'Understanding story requirements...',
   'Creating a compelling crime...',
+  'Creating a compelling crime...',
   'Developing witness personalities...',
   'Informing witnesses about the crime...',
   'Designing witness outfits...',
   'Checking for consistency...',
   'Finalizing the case file...',
   'Finalizing the case file...',
+  'Still finalizing the case file...',
+  'Still finalizing the case file...',
   'Still finalizing the case file...',
   'Still finalizing the case file...',
 ]

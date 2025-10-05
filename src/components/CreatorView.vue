@@ -49,6 +49,7 @@
     v-else-if="game && game.status === 'in-progress' && game.settings.mode === 'classic'"
     :game="game"
     :game-id="gameId"
+    :currentUser="currentUser"
     @give-up="$emit('finish-game')"
     @delete-game="$emit('delete-game')"
   />
@@ -63,6 +64,8 @@
   <ClassicModeView
     v-else-if="game && game.status === 'finished' && game.settings.mode === 'classic'"
     :game="game"
+    :game-id="gameId"
+    :currentUser="currentUser"
     @give-up="$emit('finish-game')"
     @delete-game="$emit('delete-game')"
   />
@@ -118,6 +121,9 @@ defineProps({
     type: String,
     required: true,
   },
+  currentUser: {
+    type: /** @type {PropType<currentUser | null>} */ (Object),
+    required: true,
 })
 
 const emit = defineEmits([

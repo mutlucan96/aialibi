@@ -147,4 +147,8 @@ const getWitnessStatusColor = (witness) => {
   max-height: 300px; /* Adjust as needed */
   overflow-y: auto;
 }
+
+.v-avatar >>> .v-img__img--cover {
+  object-fit: contain !important;
+}
 </style>

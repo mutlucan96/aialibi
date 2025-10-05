@@ -20,12 +20,14 @@
     </div>
 
     <div v-else-if="game.status === 'finished'">
-      <h2>The Case is Closed!</h2>
-      <p><strong>Culprit:</strong> {{ game.story.culprit }}</p>
-      <p><strong>Motive:</strong> {{ game.story.motive }}</p>
-
-      <v-btn color="error" @click="showDeleteGameDialog = true">Delete Game</v-btn>
-
+      <v-card max-width="600" class="mx-auto text-center pa-5">
+        <v-card-title>The Case is Closed!</v-card-title>
+        <v-card-text>
+          <p><strong>Culprit:</strong> {{ game.story.culprit }}</p>
+          <p><strong>Motive:</strong> {{ game.story.motive }}</p>
+        </v-card-text>
+        <v-btn color="error" @click="showDeleteGameDialog = true">Delete Game</v-btn>
+      </v-card>
       <v-dialog v-model="showDeleteGameDialog" max-width="500">
         <v-card>
           <v-card-title class="headline">Confirm Delete Game</v-card-title>

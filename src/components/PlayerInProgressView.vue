@@ -64,6 +64,7 @@ import {
   clearAllWitnessTalkingTo,
   getChatHistory,
   recordCorrectAccusation as recordCorrectAccusationInDb,
+  finishGame,
 } from '@/utils/game-state.js'
 import { sendChatMessage, evaluateAccusation } from '@/utils/ai.js'
 import { formatTime } from '@/utils/ui.js'
@@ -195,7 +196,11 @@ async function recordCorrectAccusation() {
   )
 
   if (teamId) {
-    await recordCorrectAccusationInDb(props.gameId, teamId)
+    if (props.game.settings.mode === 'race') {
+      await recordCorrectAccusationInDb(props.gameId, teamId)
+    } else {
+      await finishGame(props.gameId)
+    }
   } else {
     console.error('Could not find team ID for current user:', currentUserId)
   }

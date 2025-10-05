@@ -124,6 +124,7 @@ defineProps({
   currentUser: {
     type: /** @type {PropType<currentUser | null>} */ (Object),
     required: true,
+  },
 })
 
 const emit = defineEmits([

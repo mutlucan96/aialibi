@@ -38,14 +38,7 @@
     </v-col>
   </v-row>
   <!-- Control Buttons -->
-  <v-alert
-    class="mt-2 text-body-2"
-    icon="mdi-alert-outline"
-    type="warning"
-    variant="elevated"
-    rounded="lg"
-    dense
-  >
+  <v-alert class="mt-2 text-body-2" icon="mdi-alert-outline" variant="elevated" rounded="lg" dense>
     AI can make mistakes. Please review the generated story before starting the game.<span
       v-if="gameSettings.mode === 'race'"
     >

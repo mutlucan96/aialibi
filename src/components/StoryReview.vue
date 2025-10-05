@@ -151,9 +151,3 @@ const imagesGenerated = computed(() => {
   return props.witnesses.every((w) => w.imageUrl)
 })
 </script>
-
-<style scoped>
-.v-avatar >>> .v-img__img--cover {
-  object-fit: contain !important;
-}
-</style>

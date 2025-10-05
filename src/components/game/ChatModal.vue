@@ -171,8 +171,4 @@ const sendMessage = () => {
   background-color: #e0e0e0;
   color: black;
 }
-
-.v-avatar >>> .v-img__img--cover {
-  object-fit: contain !important;
-}
 </style>

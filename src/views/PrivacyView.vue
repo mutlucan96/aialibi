@@ -5,7 +5,7 @@
     <v-row justify="center">
       <v-col cols="12" md="8">
         <v-card class="pa-4">
-          <v-card-title class="text-h4">Privacy Policy for AI Alibi</v-card-title>
+          <v-card-title class="text-h4">Privacy Policy</v-card-title>
           <v-card-subtitle>Last Updated: 30 September 2025</v-card-subtitle>
 
           <v-card-text>

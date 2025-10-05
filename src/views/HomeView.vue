@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container>
     <v-row justify="center" align="center">
       <v-col cols="12" sm="8" md="6" lg="4">
         <page-header />

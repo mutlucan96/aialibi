@@ -97,9 +97,12 @@
         label="Theme / Additional Info (optional)"
       ></v-textarea>
 
-      <v-btn ref="submitButton" type="submit" :loading="isGeneratingStory" color="primary">
-        {{ hasStoryGenerated ? 'Regenerate Story' : 'Generate Story' }}
-      </v-btn>
+      <div class="d-flex align-center">
+        <v-btn ref="submitButton" type="submit" :loading="isGeneratingStory" color="primary">
+          {{ hasStoryGenerated ? 'Regenerate Story' : 'Generate Story' }}
+        </v-btn>
+        <span v-if="isGeneratingStory" class="ml-4 text-caption">{{ loadingStatusMessage }}</span>
+      </div>
     </v-form>
   </v-card>
 </template>
@@ -128,6 +131,10 @@ const props = defineProps({
   },
   hasStoryGenerated: {
     type: Boolean,
+    required: true,
+  },
+  loadingStatusMessage: {
+    type: String,
     required: true,
   },
 })

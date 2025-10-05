@@ -18,6 +18,7 @@
         :case-file="caseFile"
         :witnesses="witnesses"
         :show-solution="showSolution"
+        :loading-status-message="loadingStatusMessage"
         @generate-story="handleGenerateStory"
         @generate-images="handleGenerateImages"
         @start-game="handleStartGame"
@@ -90,6 +91,21 @@ const caseFile = ref(null)
 const witnesses = ref([])
 const showSolution = ref(false) // For Race Mode
 
+const loadingStatusMessage = ref('')
+let statusInterval = null
+
+const storyGenerationSteps = [
+  'Understanding story requirements...',
+  'Creating a compelling crime...',
+  'Developing witness personalities...',
+  'Informing witnesses about the crime...',
+  'Designing witness outfits...',
+  'Checking for consistency...',
+  'Finalizing the case file...',
+  'Still finalizing the case file...',
+  'Still Finalizing the case file...',
+]
+
 const isCreator = computed(() => {
   if (!game.value || !currentUser.value) return false
   const creatorId = String(game.value.creatorId || '').trim()
@@ -157,6 +173,16 @@ async function handleGenerateStory(newSettings) {
   isGeneratingStory.value = true
   caseFile.value = null
   witnesses.value = []
+
+  let stepIndex = 0
+  setTimeout(() => {
+    loadingStatusMessage.value = storyGenerationSteps[stepIndex]
+    statusInterval = setInterval(() => {
+      stepIndex = (stepIndex + 1) % storyGenerationSteps.length
+      loadingStatusMessage.value = storyGenerationSteps[stepIndex]
+    }, 4000)
+  }, 1000)
+
   try {
     const { caseFile: newCaseFile, witnesses: newWitnesses } = await generateStory(
       props.gameId,
@@ -168,6 +194,9 @@ async function handleGenerateStory(newSettings) {
     console.error('Error generating story:', error)
     alert('Error generating story: ' + error.reason)
   } finally {
+    clearInterval(statusInterval)
+    statusInterval = null
+    loadingStatusMessage.value = ''
     isGeneratingStory.value = false
   }
 }

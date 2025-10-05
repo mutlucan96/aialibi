@@ -10,6 +10,7 @@
           :has-story-generated="!!caseFile"
           @generate-story="onGenerateStory"
           @open-presenter-window="$emit('open-presenter-window')"
+          :loading-status-message="loadingStatusMessage"
           @remove-team="$emit('remove-team', $event)"
         />
       </v-col>
@@ -111,6 +112,10 @@ defineProps({
   },
   showSolution: {
     type: Boolean,
+    required: true,
+  },
+  loadingStatusMessage: {
+    type: String,
     required: true,
   },
 })

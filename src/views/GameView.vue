@@ -116,7 +116,7 @@ const isCreator = computed(() => {
 
 /** @type {GameSettings} */
 const gameSettings = reactive({
-  mode: 'race',
+  mode: 'classic',
   languageLevel: 'B1',
   targetVocabulary: '',
   theme: '',

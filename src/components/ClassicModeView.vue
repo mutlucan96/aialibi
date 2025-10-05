@@ -1,8 +1,10 @@
 <template>
   <div class="classic-mode-view">
     <div v-if="game.status === 'in-progress'">
-      <PlayerInProgressView :game="game" :game-id="gameId" />
-      <v-btn color="warning" @click="showGiveUpDialog = true">Give Up</v-btn>
+      <PlayerInProgressView :game="game" :game-id="gameId" :currentUser="currentUser" />
+      <div class="d-flex justify-center">
+        <v-btn color="warning" @click="showGiveUpDialog = true">Give Up</v-btn>
+      </div>
 
       <v-dialog v-model="showGiveUpDialog" max-width="500">
         <v-card>
@@ -57,6 +59,11 @@ const props = defineProps({
   },
   gameId: {
     type: String,
+    required: true,
+  },
+  /** @type {PropType<currentUser | null>} */
+  currentUser: {
+    type: Object,
     required: true,
   },
 })

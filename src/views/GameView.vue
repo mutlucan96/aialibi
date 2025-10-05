@@ -12,6 +12,7 @@
         :game="game"
         :game-id="gameId"
         :game-settings="gameSettings"
+        :current-user="currentUser"
         :is-generating-story="isGeneratingStory"
         :is-generating-images="isGeneratingImages"
         :case-file="caseFile"
@@ -184,7 +185,7 @@ async function handleGenerateImages() {
 }
 
 async function handleStartGame() {
-  await startGame(props.gameId, caseFile.value, witnesses.value, gameSettings)
+  await startGame(props.gameId, caseFile.value, witnesses.value, gameSettings, currentUser.value)
 }
 
 async function handleFinishGame() {

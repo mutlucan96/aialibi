@@ -1,7 +1,10 @@
 import { db } from '@/firebase'
-import { child, get, ref as dbRef, remove, serverTimestamp, update } from 'firebase/database'
+import { child, get, ref as dbRef, remove, serverTimestamp, set, update } from 'firebase/database'
 
-/** @import {Story, GameSettings, ChatMessage} from '@/types.js' */
+/**
+ * @import {Story, GameSettings, ChatMessage} from '@/types.js'
+ * @import {User} from 'firebase/auth'
+ */
 
 /**
  * Starts the game.
@@ -9,9 +12,23 @@ import { child, get, ref as dbRef, remove, serverTimestamp, update } from 'fireb
  * @param {Story} caseFile
  * @param {any[]} witnesses - The array of witness objects.
  * @param {GameSettings} gameSettings - The game settings object.
+ * @param {User} currentUser - The current authenticated user.
  */
-export async function startGame(gameId, caseFile, witnesses, gameSettings) {
+export async function startGame(gameId, caseFile, witnesses, gameSettings, currentUser) {
   const gameRef = dbRef(db, `games/${gameId}`)
+
+  if (gameSettings.mode === 'classic') {
+    const teamId = currentUser.uid
+    const teamRef = dbRef(db, `games/${gameId}/teams/${teamId}`)
+    await set(teamRef, {
+      uid: teamId,
+      name: 'Neutral Detective',
+      color: '#212121',
+      emoji: '🕵️‍',
+      score: 0,
+    })
+  }
+
   await update(gameRef, {
     status: 'in-progress',
     story: caseFile,

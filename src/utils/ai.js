@@ -263,7 +263,7 @@ export async function generateImages(witnesses) {
 
   for (let i = 0; i < updatedWitnesses.length; i++) {
     const witness = updatedWitnesses[i]
-    const prompt = `Generate a cartoon style image of: ${witness.outfit}`
+    const prompt = `Generate a cartoon style image of: ${witness.outfit}. Aspect-ratio should be square`
     console.log(`--- GENERATING IMAGE PROMPT for ${witness.name} ---`)
     console.log(prompt)
 

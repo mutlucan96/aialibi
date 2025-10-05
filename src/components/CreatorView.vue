@@ -47,6 +47,7 @@
   <ClassicModeView
     v-else-if="game && game.status === 'in-progress' && game.settings.mode === 'classic'"
     :game="game"
+    :game-id="gameId"
     @give-up="$emit('finish-game')"
     @delete-game="$emit('delete-game')"
   />

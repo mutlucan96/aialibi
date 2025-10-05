@@ -1,8 +1,7 @@
 <template>
   <div class="classic-mode-view">
     <div v-if="game.status === 'in-progress'">
-      <CrimeDescription :crime="game.story.crime" />
-      <WitnessesView :game="game" />
+      <PlayerInProgressView :game="game" :game-id="gameId" />
       <v-btn color="warning" @click="showGiveUpDialog = true">Give Up</v-btn>
 
       <v-dialog v-model="showGiveUpDialog" max-width="500">
@@ -44,6 +43,7 @@
 import { ref } from 'vue'
 import CrimeDescription from '@/components/game/CrimeDescription.vue'
 import WitnessesView from '@/components/game/WitnessesView.vue'
+import PlayerInProgressView from '@/components/PlayerInProgressView.vue'
 
 /**
  * @import {PropType} from 'vue'
@@ -53,6 +53,10 @@ const props = defineProps({
   /** @type {PropType<Game>} */
   game: {
     type: Object,
+    required: true,
+  },
+  gameId: {
+    type: String,
     required: true,
   },
 })

@@ -83,10 +83,6 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  teamName: {
-    type: String,
-    required: true,
-  },
   /** @type {PropType<currentUser | null>} */
   currentUser: {
     type: Object,

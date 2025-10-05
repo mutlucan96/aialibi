@@ -9,13 +9,20 @@
   </div>
 </template>
 
-<script setup>
-</script>
+<script setup></script>
 
 <style scoped>
 .logo-icon {
-  height: 1.5em; /* Adjust as needed to match the original icon size */
+  height: 1.5em;
   vertical-align: middle;
-  margin-right: 0.5em;
+  margin-right: 10px;
+  margin-top: -10px;
+}
+
+h1 {
+  font-family: 'Roboto Slab', serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
 }
 </style>

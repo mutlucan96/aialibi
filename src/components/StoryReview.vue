@@ -38,6 +38,21 @@
     </v-col>
   </v-row>
   <!-- Control Buttons -->
+  <v-alert
+    class="mt-2 text-body-2"
+    icon="mdi-alert-outline"
+    type="warning"
+    variant="elevated"
+    rounded="lg"
+    dense
+  >
+    AI can make mistakes. Please review the generated story before starting the game.<span
+      v-if="gameSettings.mode === 'race'"
+    >
+      As the moderator, you can view live team conversations. Especially when working with minors,
+      please keep an eye on what is being discussed.</span
+    >
+  </v-alert>
   <v-card absolute class="d-flex flex-wrap justify-center pa-2 mt-2" rounded="lg">
     <v-btn
       v-if="!imagesGenerated"

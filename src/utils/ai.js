@@ -61,7 +61,7 @@ export async function generateStory(gameId, newSettings) {
         {
           "name": "Witness Name (max 2-3 words)",
           "personality": "A very detailed personality profile for the witness. This will be used by another AI to role-play as this character. Include their background, their relationship to the crime/victim, their personality, secrets, clues and how they might behave during an interrogation. This needs to be rich enough for an AI to generate dialogue from. It should include information about other witnesses and how they know them. It should also include possible questions that the player might ask and how they might answer, to help them solve the case.",
-          "outfit": "A purely visual description of the character's appearance, suitable for an image generation prompt. If related (not necessary), include the character's gender, age, personality, expression, and any other relevant details that relates to physical appearance."
+          "outfit": "A purely visual description of the character's appearance, suitable for an image generation prompt. If related (not necessary), include the character's gender, age, personality, expression, and any other relevant details that relates to physical appearance. Also add a art style and theme and keep it same for every witness."
         },
         { "name": "...", "personality": "...", "outfit": "..." },
         { "name": "...", "personality": "...", "outfit": "..." },
@@ -70,9 +70,6 @@ export async function generateStory(gameId, newSettings) {
     }
     Ensure the culprit's name is one of the four witness names.
   `
-
-  console.log('--- GENERATING STORY PROMPT ---')
-  console.log(prompt)
 
   const result = await model.generateContent(prompt)
   const storyResponse = JSON.parse(result.response.text())

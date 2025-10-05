@@ -102,8 +102,9 @@ const storyGenerationSteps = [
   'Designing witness outfits...',
   'Checking for consistency...',
   'Finalizing the case file...',
+  'Finalizing the case file...',
   'Still finalizing the case file...',
-  'Still Finalizing the case file...',
+  'Still finalizing the case file...',
 ]
 
 const isCreator = computed(() => {

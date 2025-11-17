@@ -4,7 +4,7 @@ import { ref as dbRef, set, update, push, serverTimestamp, get, child } from 'fi
 /** @import {Game, Story, GameSettings, Witness, ChatMessage} from '@/types.js' */
 
 import { ai } from '@/firebase'
-import { getGenerativeModel, ResponseModality, Schema } from 'firebase/ai'
+import { getGenerativeModel, getImagenModel, ImagenImageFormat, Schema } from 'firebase/ai'
 import { getGameById } from '@/utils/game-state.js'
 
 /**
@@ -61,7 +61,7 @@ export async function generateStory(gameId, newSettings) {
         {
           "name": "Witness Name (max 2-3 words)",
           "personality": "A very detailed personality profile for the witness. This will be used by another AI to role-play as this character. Include their background, their relationship to the crime/victim, their personality, secrets, clues and how they might behave during an interrogation. This needs to be rich enough for an AI to generate dialogue from. It should include information about other witnesses and how they know them. It should also include possible questions that the player might ask and how they might answer, to help them solve the case.",
-          "outfit": "A purely visual description of the character's appearance, suitable for an image generation prompt. If related (not necessary), include the character's gender, age, personality, expression, and any other relevant details that relates to physical appearance. Also add a art style and theme and keep it same for every witness."
+          "outfit": "A purely visual description of the character's appearance, suitable for an image generation prompt. If related (not necessary), include the character's gender, age, personality, expression, and any other relevant details that relates to physical appearance. Also add a art style and theme and keep it same for every witness. Include an artistic style to en"
         },
         { "name": "...", "personality": "...", "outfit": "..." },
         { "name": "...", "personality": "...", "outfit": "..." },
@@ -70,21 +70,24 @@ export async function generateStory(gameId, newSettings) {
     }
     Ensure the culprit's name is one of the four witness names.
   `
+  try {
+    const result = await model.generateContent(prompt)
+    const storyResponse = JSON.parse(result.response.text())
+    console.log('--- STORY RESPONSE ---')
+    console.log(storyResponse)
 
-  const result = await model.generateContent(prompt)
-  const storyResponse = JSON.parse(result.response.text())
-  console.log('--- STORY RESPONSE ---')
-  console.log(storyResponse)
+    const witnesses = storyResponse.witnesses.map((w) => ({
+      ...w,
+      id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+    }))
 
-  const witnesses = storyResponse.witnesses.map((w) => ({
-    ...w,
-    id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-  }))
+    const witnessesRef = dbRef(db, `games/${gameId}/witnesses`)
+    await set(witnessesRef, witnesses)
 
-  const witnessesRef = dbRef(db, `games/${gameId}/witnesses`)
-  await set(witnessesRef, witnesses)
-
-  return { caseFile: storyResponse, witnesses }
+    return { caseFile: storyResponse, witnesses }
+  } catch (error) {
+    throw error
+  }
 }
 
 /**
@@ -154,7 +157,7 @@ export async function sendChatMessage(
 
   // Call the Gemini 2.5 Flash Model
   const chatModel = getGenerativeModel(ai, {
-    model: 'gemini-2.5-flash',
+    model: 'gemini-2.5-flash-lite',
     generationConfig: {},
   })
 
@@ -253,26 +256,33 @@ export async function evaluateAccusation(gameId, culpritId, motive) {
 export async function generateImages(witnesses) {
   if (!witnesses || witnesses.length === 0) return []
 
-  const model = getGenerativeModel(ai, {
-    model: 'gemini-2.0-flash-preview-image-generation\n',
+  const model = getImagenModel(ai, {
+    model: 'imagen-4.0-fast-generate-001',
     generationConfig: {
-      responseModalities: [ResponseModality.TEXT, ResponseModality.IMAGE],
+      numberOfImages: 1,
+      imageFormat: ImagenImageFormat.jpeg(75),
+      personGeneration: 'allow_all',
     },
   })
   const updatedWitnesses = [...witnesses]
 
   for (let i = 0; i < updatedWitnesses.length; i++) {
     const witness = updatedWitnesses[i]
-    const prompt = `Generate a cartoon style image of: ${witness.outfit}. Aspect-ratio should be square`
+    const prompt = `${witness.outfit}. Don't include any text.`
     console.log(`--- GENERATING IMAGE PROMPT for ${witness.name} ---`)
     console.log(prompt)
 
     try {
-      const result = await model.generateContent(prompt)
-      const inlineDataParts = result.response.inlineDataParts()
-      if (inlineDataParts?.[0]) {
-        const image = inlineDataParts[0].inlineData
-        const imageUrl = `data:${image.mimeType};base64,${image.data}`
+      const response = await model.generateImages(prompt)
+
+      if (response.filteredReason) {
+        console.log(response.filteredReason)
+      }
+
+      if (response.images.length > 0) {
+        const image = response.images[0]
+        console.log(image)
+        const imageUrl = `data:image/jpeg;base64,${image.bytesBase64Encoded}`
         console.log(`Generated image for ${witness.name}`)
         witness.imageUrl = imageUrl
       } else {

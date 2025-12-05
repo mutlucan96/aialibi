@@ -78,24 +78,20 @@ export async function generateStory(gameId, newSettings) {
     }
     Ensure the culprit's name is one of the four witness names.
   `
-  try {
-    const result = await model.generateContent(prompt)
-    const storyResponse = JSON.parse(result.response.text())
-    console.log('--- STORY RESPONSE ---')
-    console.log(storyResponse)
+  const result = await model.generateContent(prompt)
+  const storyResponse = JSON.parse(result.response.text())
+  console.log('--- STORY RESPONSE ---')
+  console.log(storyResponse)
 
-    const witnesses = storyResponse.witnesses.map((w) => ({
-      ...w,
-      id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-    }))
+  const witnesses = storyResponse.witnesses.map((w) => ({
+    ...w,
+    id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+  }))
 
-    const witnessesRef = dbRef(db, `games/${gameId}/witnesses`)
-    await set(witnessesRef, witnesses)
+  const witnessesRef = dbRef(db, `games/${gameId}/witnesses`)
+  await set(witnessesRef, witnesses)
 
-    return { caseFile: storyResponse, witnesses }
-  } catch (error) {
-    throw error
-  }
+  return { caseFile: storyResponse, witnesses }
 }
 
 /**

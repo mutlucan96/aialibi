@@ -1,5 +1,6 @@
-import { db, auth } from '@/firebase'
+import { db, auth, storage } from '@/firebase'
 import { ref as dbRef, set, update, push, serverTimestamp, get, child } from 'firebase/database'
+import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage'
 
 /** @import {Game, Story, GameSettings, Witness, ChatMessage} from '@/types.js' */
 
@@ -257,10 +258,11 @@ export async function evaluateAccusation(gameId, culpritId, motive) {
 
 /**
  * Generates images for each witness.
+ * @param {string} gameId - The ID of the game.
  * @param {any[]} witnesses - The array of witness objects.
  * @returns {Promise<any[]>} - The witnesses array with imageUrls.
  */
-export async function generateImages(witnesses) {
+export async function generateImages(gameId, witnesses) {
   if (!witnesses || witnesses.length === 0) return []
 
   const model = getImagenModel(ai, {
@@ -292,10 +294,16 @@ export async function generateImages(witnesses) {
 
       if (response.images.length > 0) {
         const image = response.images[0]
-        console.log(image)
-        const imageUrl = `data:image/jpeg;base64,${image.bytesBase64Encoded}`
+        const imagePath = `game-images/${gameId}/${witness.id}.jpg`
+        const imageStorageRef = storageRef(storage, imagePath)
+        const metadata = { contentType: 'image/jpeg' }
+
+        await uploadString(imageStorageRef, image.bytesBase64Encoded, 'base64', metadata)
+
+        const downloadURL = await getDownloadURL(imageStorageRef)
+
         console.log(`Generated image for ${witness.name}`)
-        witness.imageUrl = imageUrl
+        witness.imageUrl = downloadURL
       } else {
         console.error(`No image generated for ${witness.name}`)
         alert(`No image generated for ${witness.name}`)

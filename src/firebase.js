@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 import { getAuth } from 'firebase/auth'
 import { getAI, GoogleAIBackend } from 'firebase/ai'
+import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyD8mrHHN6NBQFOvjmF8tSvtT-cgVhnOPcY',
@@ -20,4 +21,5 @@ const app = initializeApp(firebaseConfig)
 
 export const auth = getAuth(app)
 export const db = getDatabase(app)
+export const storage = getStorage(app)
 export const ai = getAI(app, { backend: new GoogleAIBackend() })

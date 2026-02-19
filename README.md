@@ -6,10 +6,10 @@ Welcome to **AI Alibi**! This is an interactive, multiplayer whodunnit game desi
 
 This project is being developed as part of "Digital Tools and Technology in the Young Learners' EFL Classroom" course at the University of Augsburg.
 
-**Live Demo:** [alibi.mutlucan.dev](https://alibi.mutlucan.dev)
+## Live Demo
+[alibi.mutlucan.dev](https://alibi.mutlucan.dev)
 
 ## Core Concept
-
 The game challenges students (as "detectives") to solve a simple, age-appropriate mystery. To do this, they must collaborate as a team to question a cast of four unique witnesses. The witnesses are all powered by a generative AI (Google's Gemini API), which responds in character and provides clues (and red herrings!) based on a secret, pre-generated story.
 
 Teams must gather enough evidence to correctly identify the culprit and their motive.
@@ -22,6 +22,14 @@ Teams must gather enough evidence to correctly identify the culprit and their mo
     * **Classic Mode**: A collaborative, turn-based mode for the whole class working as a single team (ideal for a single projector setup).
     * **Race Mode**: A real-time, competitive mode where multiple teams race in isolation to solve the crime first.
 * **Teacher/Moderator Controls**: A full moderation panel for game setup, customisation (language level, theme), and real-time monitoring.
+
+## Screenshots
+
+![Screenshot 1](ss1.png)
+![Screenshot 2](ss2.png)
+![Screenshot 3](ss3.png)
+![Screenshot 4](ss4.png)
+![Screenshot 5](ss5.png)
 
 ## Tech Stack
 
@@ -74,4 +82,3 @@ This command starts a simple local server to preview the production files.
 ```sh
 pnpm preview
 ```
-

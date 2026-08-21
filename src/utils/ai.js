@@ -1,49 +1,110 @@
-import { db, functions } from '@/firebase'
-import { ref as dbRef, push, onValue, serverTimestamp, off } from 'firebase/database'
-import { httpsCallable } from 'firebase/functions'
+import { db } from '@/firebase'
+import {
+  ref as dbRef,
+  set,
+  get,
+  push,
+  onValue,
+  serverTimestamp,
+  off,
+} from 'firebase/database'
 
 /**
  * @import {Game, Story, GameSettings, Witness, ChatMessage} from '@/types.js'
  */
 
 /**
- * Generates the story based on the settings via a secure Cloud Function.
+ * Generates the story based on the settings via a Realtime Database event trigger.
  * @param {string} gameId - The ID of the game.
  * @param {GameSettings} newSettings - The game settings from the form.
  * @returns {Promise<{caseFile: Story, witnesses: Witness[]}>}
- * @throws {Error} Throws if Cloud Function fails or user lacks Google Auth.
+ * @throws {Error} Throws if story generation fails or times out.
  */
 export async function generateStory(gameId, newSettings) {
-  const generateStoryFn = httpsCallable(functions, 'generateStory')
-  const result = await generateStoryFn({
-    gameId,
+  const storyReqRef = dbRef(db, `games/${gameId}/storyRequest`)
+
+  await set(storyReqRef, {
     settings: { ...newSettings },
+    status: 'pending',
+    requestedAt: serverTimestamp(),
   })
 
-  const { caseFile, witnesses } = /** @type {{caseFile: Story, witnesses: Witness[]}} */ (
-    result.data
-  )
-  return { caseFile, witnesses }
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      off(storyReqRef)
+      reject(new Error('Story generation timed out. Please try again.'))
+    }, 60000)
+
+    const unsubscribe = onValue(storyReqRef, async (snapshot) => {
+      const data = snapshot.val()
+      if (!data) return
+
+      if (data.status === 'completed') {
+        clearTimeout(timeoutId)
+        unsubscribe()
+
+        // Fetch generated story and witnesses from RTDB
+        const gameSnap = await get(dbRef(db, `games/${gameId}`))
+        const gameData = gameSnap.val() || {}
+        const caseFile = gameData.story || null
+        const witnesses = Array.isArray(gameData.witnesses)
+          ? gameData.witnesses
+          : Object.values(gameData.witnesses || {})
+
+        resolve({ caseFile, witnesses })
+      } else if (data.status === 'error') {
+        clearTimeout(timeoutId)
+        unsubscribe()
+        reject(new Error(data.error || 'Failed to generate story.'))
+      }
+    })
+  })
 }
 
 /**
- * Generates images for each witness via a secure Cloud Function.
+ * Generates images for each witness via a Realtime Database event trigger.
  * @param {string} gameId - The ID of the game.
  * @param {Witness[]} witnesses - The array of witness objects.
  * @returns {Promise<Witness[]>} - The witnesses array with imageUrls.
- * @throws {Error} Throws if image generation fails.
  */
 export async function generateImages(gameId, witnesses) {
   if (!witnesses || witnesses.length === 0) return []
 
-  const generateImagesFn = httpsCallable(functions, 'generateImages')
-  const result = await generateImagesFn({
-    gameId,
-    witnesses: [...witnesses],
+  const imgReqRef = dbRef(db, `games/${gameId}/imageRequest`)
+
+  await set(imgReqRef, {
+    status: 'pending',
+    requestedAt: serverTimestamp(),
   })
 
-  const { witnesses: updatedWitnesses } = /** @type {{witnesses: Witness[]}} */ (result.data)
-  return updatedWitnesses || witnesses
+  return new Promise((resolve) => {
+    const timeoutId = setTimeout(() => {
+      off(imgReqRef)
+      console.warn('Image generation timed out.')
+      resolve(witnesses)
+    }, 90000)
+
+    const unsubscribe = onValue(imgReqRef, async (snapshot) => {
+      const data = snapshot.val()
+      if (!data) return
+
+      if (data.status === 'completed') {
+        clearTimeout(timeoutId)
+        unsubscribe()
+
+        const witnessesSnap = await get(dbRef(db, `games/${gameId}/witnesses`))
+        const updatedWitnesses = Array.isArray(witnessesSnap.val())
+          ? witnessesSnap.val()
+          : Object.values(witnessesSnap.val() || {})
+
+        resolve(updatedWitnesses.length > 0 ? updatedWitnesses : witnesses)
+      } else if (data.status === 'error') {
+        clearTimeout(timeoutId)
+        unsubscribe()
+        resolve(witnesses)
+      }
+    })
+  })
 }
 
 /**

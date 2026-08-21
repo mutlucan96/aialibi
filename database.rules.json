@@ -87,6 +87,14 @@
           ".read": "auth != null",
           ".write": "auth != null && data.parent().child('creatorId').val() === auth.uid"
         },
+        "storyRequest": {
+          ".read": "auth != null",
+          ".write": "auth != null && !root.child('blockedUsers').child(auth.uid).exists() && (data.parent().child('creatorId').val() === auth.uid || auth.token.firebase.sign_in_provider === 'google.com')"
+        },
+        "imageRequest": {
+          ".read": "auth != null",
+          ".write": "auth != null && !root.child('blockedUsers').child(auth.uid).exists() && (data.parent().child('creatorId').val() === auth.uid || auth.token.firebase.sign_in_provider === 'google.com')"
+        },
         "userActivity": {
           "$uid": {
             ".read": "auth != null && auth.uid === $uid",

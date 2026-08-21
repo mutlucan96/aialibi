@@ -1,9 +1,9 @@
 /**
  * AI Alibi Firebase Cloud Functions Entrypoint
- * Re-exports modularized triggers and callable functions.
+ * Re-exports Realtime Database background event triggers.
  */
 
 export { onChatCreated } from './chat.js'
 export { onAccusationCreated } from './accusation.js'
-export { generateStory } from './story.js'
-export { generateImages } from './images.js'
+export { onStoryRequested } from './story.js'
+export { onImageRequested } from './images.js'

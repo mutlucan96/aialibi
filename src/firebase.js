@@ -30,11 +30,12 @@ if (
   self.FIREBASE_APPCHECK_DEBUG_TOKEN = true
 }
 
-// Initialize Firebase App Check with reCAPTCHA Enterprise (configured in Firebase Console)
+// Initialize Firebase App Check with reCAPTCHA Enterprise
+const siteKey =
+  import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY || '6LctMpEtAAAAALaM_Kq-wUPynJ86TaRye758qgZe'
+
 export const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaEnterpriseProvider(
-    import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY || undefined,
-  ),
+  provider: new ReCaptchaEnterpriseProvider(siteKey),
   isTokenAutoRefreshEnabled: true,
 })
 

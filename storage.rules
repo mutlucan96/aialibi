@@ -5,13 +5,9 @@ service firebase.storage {
     // Match any file in the game-images directory
     match /game-images/{gameId}/{imageId} {
       // Anyone can read the images
-      allow read;
-      // Only authenticated users can write...
-      allow write: if request.auth != null &&
-                      // ...if the file is smaller than 5MB
-                      request.resource.size < 5 * 1024 * 1024 &&
-                      // ...and if the file is an image
-                      request.resource.contentType.matches('image/.*');
+      allow read: if true;
+      // Disallow all client-side writes (only Cloud Functions via Admin SDK can upload)
+      allow write: if false;
     }
   }
 }

@@ -88,4 +88,22 @@
  * @property {Witness[]} witnesses - An array of witness objects.
  */
 
+/**
+ * @typedef {Object} AccusationRequest
+ * @property {string} teamId - The UID of the team making the accusation.
+ * @property {string} culprit - The ID of the accused witness.
+ * @property {string} motive - The proposed motive.
+ * @property {('pending'|'evaluated'|'error')} status - The status of the evaluation.
+ * @property {boolean} [isCorrect] - Whether the accusation was correct.
+ * @property {Object} timestamp - Server timestamp object.
+ */
+
+/**
+ * @typedef {Object} BlockedUser
+ * @property {Object} bannedAt - Server timestamp when user was banned.
+ * @property {string} reason - The reason for the ban.
+ */
+
 export {}
+
+

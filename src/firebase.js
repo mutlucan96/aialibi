@@ -1,9 +1,9 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 import { getAuth } from 'firebase/auth'
-import { getAI, GoogleAIBackend } from 'firebase/ai'
 import { getStorage } from 'firebase/storage'
+import { getFunctions } from 'firebase/functions'
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyD8mrHHN6NBQFOvjmF8tSvtT-cgVhnOPcY',
@@ -19,7 +19,28 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig)
 
+// Enable App Check debug token for localhost / local dev testing
+if (
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    import.meta.env.DEV)
+) {
+  // @ts-ignore
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true
+}
+
+// Initialize Firebase App Check with reCAPTCHA Enterprise (configured in Firebase Console)
+export const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider(
+    import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY || undefined,
+  ),
+  isTokenAutoRefreshEnabled: true,
+})
+
 export const auth = getAuth(app)
 export const db = getDatabase(app)
 export const storage = getStorage(app)
-export const ai = getAI(app, { backend: new GoogleAIBackend() })
+export const functions = getFunctions(app, 'europe-west1')
+
+

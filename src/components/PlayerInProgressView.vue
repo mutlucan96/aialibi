@@ -150,7 +150,12 @@ async function handleAccusation({ culprit, motive }) {
   isAccusationLoading.value = true
   try {
     console.log('Accusation submitted:', { culprit, motive })
-    const isCorrect = await evaluateAccusation(props.gameId, culprit, motive)
+    const isCorrect = await evaluateAccusation(
+      props.gameId,
+      culprit,
+      motive,
+      props.currentUser?.uid,
+    )
 
     if (isCorrect) {
       console.log('Accusation is CORRECT!')
@@ -248,27 +253,30 @@ async function handleOpenChat(witnessId) {
 
 async function handleSendMessage(messageText) {
   currentChatHistory.value.push({ sender: 'player', text: messageText })
-  currentChatHistory.value.push({ sender: 'ai', text: '' })
+  currentChatHistory.value.push({ sender: 'ai', text: 'Thinking...' })
   isAiResponding.value = true
 
   await sendChatMessage(
     props.gameId,
-    props.game,
     activeWitness.value.id,
     messageText,
-    activeWitness.value,
-    props.currentUser.uid,
-    (chunk) => {
+    props.currentUser?.uid,
+    (updatedAnswer) => {
       if (
         currentChatHistory.value.length > 0 &&
         currentChatHistory.value[currentChatHistory.value.length - 1].sender === 'ai'
       ) {
-        currentChatHistory.value[currentChatHistory.value.length - 1].text += chunk
+        currentChatHistory.value[currentChatHistory.value.length - 1].text = updatedAnswer
       }
     },
     () => {
       isAiResponding.value = false
       updateWitnessTalkingTo(props.gameId, activeWitness.value.id, null)
+    },
+    (errorMessage) => {
+      snackbarText.value = errorMessage
+      snackbarColor.value = 'error'
+      snackbar.value = true
     },
   )
 }

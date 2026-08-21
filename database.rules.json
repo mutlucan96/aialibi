@@ -1,31 +1,43 @@
 {
   "rules": {
+    "blockedUsers": {
+      ".read": "auth != null",
+      ".write": false
+    },
     "games": {
       "$gameId": {
         ".read": true,
-        ".write": "(!data.exists() && auth.token.firebase.sign_in_provider === 'google.com') || (data.exists() && data.child('creatorId').val() === auth.uid)",
+        ".write": "(!data.exists() && auth.token.firebase.sign_in_provider === 'google.com' && !root.child('blockedUsers').child(auth.uid).exists()) || (data.exists() && data.child('creatorId').val() === auth.uid && !root.child('blockedUsers').child(auth.uid).exists())",
         "teams": {
-          ".write": "auth != null",
+          ".read": true,
+          ".write": "auth != null && !root.child('blockedUsers').child(auth.uid).exists()",
           "$teamId": {
-            ".write": "data.child('uid').val() === auth.uid"
+            ".write": "(auth != null && !root.child('blockedUsers').child(auth.uid).exists() && (data.child('uid').val() === auth.uid || (!data.exists() && newData.child('uid').val() === auth.uid))) || (data.parent().parent().child('creatorId').val() === auth.uid)"
           }
         },
         "witnesses": {
-          "$witnessId": {
-            ".write": "auth != null"
-          }
+          ".read": true,
+          ".write": "auth != null && !root.child('blockedUsers').child(auth.uid).exists() && (data.parent().child('creatorId').val() === auth.uid || auth.token.firebase.sign_in_provider === 'google.com')"
         },
         "chats": {
           "$witnessId": {
             ".read": "auth != null",
-            ".write": "auth != null"
+            "$chatId": {
+              ".read": "auth != null",
+              ".write": "auth != null && !root.child('blockedUsers').child(auth.uid).exists() && ((!data.exists() && newData.child('teamId').val() === auth.uid) || (data.parent().parent().parent().child('creatorId').val() === auth.uid))"
+            }
+          }
+        },
+        "accusations": {
+          ".read": "auth != null",
+          "$accusationId": {
+            ".read": "auth != null",
+            ".write": "auth != null && !root.child('blockedUsers').child(auth.uid).exists() && ((!data.exists() && newData.child('teamId').val() === auth.uid) || (data.parent().parent().child('creatorId').val() === auth.uid))"
           }
         },
         "results": {
-          "$witnessId": {
-            ".read": "auth != null",
-            ".write": "auth != null"
-          }
+          ".read": "auth != null",
+          ".write": "auth != null && data.parent().child('creatorId').val() === auth.uid"
         }
       }
     }

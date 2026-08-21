@@ -1,0 +1,16 @@
+{
+  "name": "aialibi-functions",
+  "version": "1.0.0",
+  "description": "Firebase Cloud Functions for AI Alibi game (Gemini AI integration & moderation)",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "firebase-admin": "^13.1.0",
+    "firebase-functions": "^6.3.0"
+  },
+  "private": true
+}

@@ -102,9 +102,14 @@ export const onStoryRequested = onValueWritten(
 
       const responseText = response.text
       if (!responseText) {
-        throw new Error(
-          'AI returned an empty response. The request may have been blocked by safety filters.',
-        )
+        const errorMsg =
+          'AI returned an empty response. The request may have been blocked by safety filters.'
+        console.error(`Error generating story for game ${gameId}: ${errorMsg}`)
+        await reqRef.update({
+          status: 'error',
+          error: errorMsg,
+        })
+        return
       }
       const storyResponse = JSON.parse(responseText)
 

@@ -117,7 +117,13 @@ export const onImageRequested = onValueWritten(
       const base64Data = await generateWitnessSpritesheet(witnessesArray)
 
       if (!base64Data) {
-        throw new Error('Image generation failed to return image data. Check Cloud Functions logs.')
+        const errorMsg = 'Image generation failed to return image data. Check Cloud Functions logs.'
+        console.error(`Error in spritesheet image generation for game ${gameId}: ${errorMsg}`)
+        await reqRef.update({
+          status: 'error',
+          error: errorMsg,
+        })
+        return
       }
 
       // Save the single 2x2 spritesheet file to Firebase Storage

@@ -81,11 +81,11 @@ const isWitnessDisabled = (witnessId) => {
   transition: transform 0.2s ease-in-out;
 }
 
-.witness-card:hover:not(.v-card--disabled) {
+:deep(.witness-card:hover:not(.v-card--disabled)) {
   transform: translateY(-5px);
 }
 
-.v-card--disabled {
+:deep(.v-card--disabled) {
   opacity: 0.6;
   cursor: not-allowed;
 }

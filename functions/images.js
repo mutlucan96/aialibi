@@ -60,7 +60,6 @@ All 4 characters must share a cohesive 2D cartoon art style fitting the mystery 
         responseModalities: ['IMAGE'],
         imageConfig: {
           aspectRatio: '1:1',
-          imageSize: '512',
         },
         safetySettings,
       },

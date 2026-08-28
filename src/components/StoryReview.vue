@@ -28,10 +28,7 @@
     <v-col v-for="(witness, index) in localWitnesses" :key="index" cols="12" md="6" class="pa-1">
       <v-card>
         <div class="d-flex align-center pa-1">
-          <v-avatar v-if="witness.imageUrl" :image="witness.imageUrl" size="96" class=""></v-avatar>
-          <v-avatar v-else size="96" class="" color="grey-lighten-1">
-            <span class="text-h3">{{ witness.name.charAt(0) }}</span>
-          </v-avatar>
+          <WitnessAvatar :witness="witness" :size="96" />
           <v-card-title class="pl-4">{{ witness.name }}</v-card-title>
         </div>
       </v-card>
@@ -64,6 +61,7 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
+import WitnessAvatar from '@/components/common/WitnessAvatar.vue'
 
 /**
  * @import {PropType} from 'vue'

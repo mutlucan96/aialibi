@@ -12,7 +12,8 @@
  * @typedef {Object} Witness
  * @property {string} id - The unique ID of the witness.
  * @property {string} name - The name of the witness.
- * @property {string} imageUrl - The URL for the witness's image.
+ * @property {string} imageUrl - The URL for the witness's image or spritesheet.
+ * @property {number} [spriteIndex] - The quadrant index (0: Top-Left, 1: Top-Right, 2: Bottom-Left, 3: Bottom-Right) if using a 2x2 spritesheet.
  * @property {string} personality - The personality of the witness.
  * @property {string} outfit - The outfit of the witness.
  * @property {string} talkingToTeamId - The ID of the team that is currently talking to the witness.

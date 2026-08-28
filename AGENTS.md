@@ -95,7 +95,7 @@ The game's design is grounded in several key academic theories. All code and fea
 - **Backend:** Firebase
   - **Authentication:** Google Sign-In for the Moderator; Anonymous Authentication for players/teams.
   - **Database:** Firebase Realtime Database for live game state.
-- **AI Integration:** **Firebase Genkit** using the **Google Gemini API**. AI calls must be secured and handled through this backend layer, never on the client-side. **App Check** will be used to secure Firebase services.
+- **AI Integration:** **`@google/genai` unified SDK** with **Agent Platform (Vertex AI) ADC** on Cloud Functions. AI calls are handled exclusively server-side via RTDB event triggers, never on the client. The client uses **Firebase AI Logic (`firebase/ai`)** only if direct client-side AI is ever needed. **App Check** will be used to secure Firebase services.
 
 ### Application Views
 

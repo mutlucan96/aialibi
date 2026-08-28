@@ -1,8 +1,8 @@
 import { onValueCreated } from 'firebase-functions/v2/database'
-import { db, genAI, ServerValue, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.js'
+import { db, ai, ServerValue, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.js'
 
 /**
- * RTDB Event Trigger: Handles player accusations.
+ * RTDB Event Trigger: Handles player accusations via Google GenAI (gemini-3.7-flash).
  * Triggered on: /games/{gameId}/accusations/{accusationId}
  */
 export const onAccusationCreated = onValueCreated(
@@ -59,12 +59,6 @@ export const onAccusationCreated = onValueCreated(
       let isMotiveCorrect = false
 
       if (isCulpritCorrect) {
-        // 3. Evaluate motive with gemini-3.7-flash
-        const model = genAI.getGenerativeModel({
-          model: 'gemini-3.7-flash',
-          generationConfig: { responseMimeType: 'text/plain' },
-        })
-
         const prompt = `
           Crime Description: "${game.story.crime || ''}"
           Actual Culprit: "${actualCulprit}"
@@ -76,9 +70,13 @@ export const onAccusationCreated = onValueCreated(
           Respond with ONLY "CORRECT" or "INCORRECT".
         `
 
-        const result = await model.generateContent(prompt)
-        const evaluationText = result.response.text().trim().toUpperCase()
-        isMotiveCorrect = evaluationText.includes('CORRECT')
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.7-flash',
+          contents: prompt,
+        })
+
+        const evaluationText = response.text.trim().toUpperCase()
+        isMotiveCorrect = evaluationText === 'CORRECT'
       }
 
       const isOverallCorrect = isCulpritCorrect && isMotiveCorrect

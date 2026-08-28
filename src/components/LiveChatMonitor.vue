@@ -3,9 +3,7 @@
     <v-expansion-panel v-for="witness in game.witnesses" :key="witness.id">
       <v-expansion-panel-title>
         <div class="d-flex align-center">
-          <v-avatar size="36" class="mr-3">
-            <v-img :src="witness.imageUrl" :alt="witness.name"></v-img>
-          </v-avatar>
+          <WitnessAvatar :witness="witness" :size="36" custom-class="mr-3" />
           <span class="font-weight-medium">{{ witness.name }}</span>
           <v-spacer></v-spacer>
           <v-chip :color="getWitnessStatusColor(witness)" size="small" class="ml-2">
@@ -28,9 +26,7 @@
               <div class="chat-message-bubble answer">
                 {{ chat.answer }}
               </div>
-              <v-avatar size="28" class="ml-2">
-                <v-img :src="witness.imageUrl" :alt="witness.name"></v-img>
-              </v-avatar>
+              <WitnessAvatar :witness="witness" :size="28" custom-class="ml-2" />
             </div>
           </div>
         </div>
@@ -42,6 +38,7 @@
 
 <script setup>
 import { ref, onMounted, watch, onUnmounted } from 'vue'
+import WitnessAvatar from '@/components/common/WitnessAvatar.vue'
 import { db } from '@/firebase.js'
 import { ref as dbRef, onValue } from 'firebase/database'
 

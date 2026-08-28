@@ -1,11 +1,11 @@
-import { db } from '@/firebase'
+import { db, auth } from '@/firebase'
 import {
   ref as dbRef,
   set,
-  get,
   push,
-  onValue,
   serverTimestamp,
+  get,
+  onValue,
   off,
 } from 'firebase/database'
 
@@ -14,55 +14,55 @@ import {
  */
 
 /**
- * Generates the story based on the settings via a Realtime Database event trigger.
+ * Generates the story based on the settings via Realtime Database trigger to Cloud Functions (Firebase AI Logic).
  * @param {string} gameId - The ID of the game.
  * @param {GameSettings} newSettings - The game settings from the form.
  * @returns {Promise<{caseFile: Story, witnesses: Witness[]}>}
- * @throws {Error} Throws if story generation fails or times out.
  */
 export async function generateStory(gameId, newSettings) {
-  const storyReqRef = dbRef(db, `games/${gameId}/storyRequest`)
+  const reqRef = dbRef(db, `games/${gameId}/storyRequest`)
 
-  await set(storyReqRef, {
-    settings: { ...newSettings },
+  await set(reqRef, {
     status: 'pending',
+    settings: { ...newSettings },
     requestedAt: serverTimestamp(),
   })
 
   return new Promise((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      off(storyReqRef)
+    const timeout = setTimeout(() => {
+      off(reqRef)
       reject(new Error('Story generation timed out. Please try again.'))
-    }, 60000)
+    }, 90000)
 
-    const unsubscribe = onValue(storyReqRef, async (snapshot) => {
+    onValue(reqRef, async (snapshot) => {
       const data = snapshot.val()
       if (!data) return
 
       if (data.status === 'completed') {
-        clearTimeout(timeoutId)
-        unsubscribe()
+        clearTimeout(timeout)
+        off(reqRef)
 
-        // Fetch generated story and witnesses from RTDB
         const gameSnap = await get(dbRef(db, `games/${gameId}`))
-        const gameData = gameSnap.val() || {}
-        const caseFile = gameData.story || null
-        const witnesses = Array.isArray(gameData.witnesses)
-          ? gameData.witnesses
-          : Object.values(gameData.witnesses || {})
+        const game = gameSnap.val() || {}
+        const witnessesArray = Array.isArray(game.witnesses)
+          ? game.witnesses
+          : Object.values(game.witnesses || {})
 
-        resolve({ caseFile, witnesses })
+        resolve({
+          caseFile: game.story || {},
+          witnesses: witnessesArray,
+        })
       } else if (data.status === 'error') {
-        clearTimeout(timeoutId)
-        unsubscribe()
-        reject(new Error(data.error || 'Failed to generate story.'))
+        clearTimeout(timeout)
+        off(reqRef)
+        reject(new Error(data.error || 'Failed to generate story'))
       }
     })
   })
 }
 
 /**
- * Generates images for each witness via a Realtime Database event trigger.
+ * Generates portrait images for each witness via Realtime Database trigger to Cloud Functions (Firebase AI Logic).
  * @param {string} gameId - The ID of the game.
  * @param {Witness[]} witnesses - The array of witness objects.
  * @returns {Promise<Witness[]>} - The witnesses array with imageUrls.
@@ -70,45 +70,44 @@ export async function generateStory(gameId, newSettings) {
 export async function generateImages(gameId, witnesses) {
   if (!witnesses || witnesses.length === 0) return []
 
-  const imgReqRef = dbRef(db, `games/${gameId}/imageRequest`)
+  const reqRef = dbRef(db, `games/${gameId}/imageRequest`)
 
-  await set(imgReqRef, {
+  await set(reqRef, {
     status: 'pending',
     requestedAt: serverTimestamp(),
   })
 
-  return new Promise((resolve) => {
-    const timeoutId = setTimeout(() => {
-      off(imgReqRef)
-      console.warn('Image generation timed out.')
-      resolve(witnesses)
-    }, 90000)
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      off(reqRef)
+      reject(new Error('Image generation timed out. Please try again.'))
+    }, 120000)
 
-    const unsubscribe = onValue(imgReqRef, async (snapshot) => {
+    onValue(reqRef, async (snapshot) => {
       const data = snapshot.val()
       if (!data) return
 
       if (data.status === 'completed') {
-        clearTimeout(timeoutId)
-        unsubscribe()
+        clearTimeout(timeout)
+        off(reqRef)
 
         const witnessesSnap = await get(dbRef(db, `games/${gameId}/witnesses`))
-        const updatedWitnesses = Array.isArray(witnessesSnap.val())
-          ? witnessesSnap.val()
-          : Object.values(witnessesSnap.val() || {})
-
-        resolve(updatedWitnesses.length > 0 ? updatedWitnesses : witnesses)
+        const updatedWitnesses = witnessesSnap.val() || []
+        const witnessesArray = Array.isArray(updatedWitnesses)
+          ? updatedWitnesses
+          : Object.values(updatedWitnesses)
+        resolve(witnessesArray)
       } else if (data.status === 'error') {
-        clearTimeout(timeoutId)
-        unsubscribe()
-        resolve(witnesses)
+        clearTimeout(timeout)
+        off(reqRef)
+        reject(new Error(data.error || 'Failed to generate images'))
       }
     })
   })
 }
 
 /**
- * Sends a player's question to a witness via Realtime Database and listens for the AI's response.
+ * Interrogates a witness via Realtime Database trigger to Cloud Functions (Firebase AI Logic).
  * @param {string} gameId - The ID of the game.
  * @param {string} witnessId - The ID of the witness.
  * @param {string} messageText - The player's question text.
@@ -127,96 +126,90 @@ export async function sendChatMessage(
   onComplete,
   onError,
 ) {
-  const chatRef = dbRef(db, `games/${gameId}/chats/${witnessId}`)
+  try {
+    const chatsRef = dbRef(db, `games/${gameId}/chats/${witnessId}`)
+    const newChatRef = push(chatsRef)
 
-  // Push question to RTDB with 'pending' status to trigger server Cloud Function
-  const newChatMessageRef = await push(chatRef, {
-    teamId: teamId,
-    question: messageText.trim(),
-    status: 'pending',
-    timestamp: serverTimestamp(),
-  })
+    await set(newChatRef, {
+      teamId,
+      question: messageText.trim(),
+      status: 'pending',
+      timestamp: serverTimestamp(),
+    })
 
-  const chatKey = newChatMessageRef.key
-  if (!chatKey) return
-
-  const singleChatRef = dbRef(db, `games/${gameId}/chats/${witnessId}/${chatKey}`)
-
-  return new Promise((resolve) => {
-    const timeoutId = setTimeout(() => {
-      off(singleChatRef)
-      if (onError) onError('Request timed out. Please try again.')
+    const timeout = setTimeout(() => {
+      off(newChatRef)
+      if (onError) onError('Witness response timed out.')
       onComplete()
-      resolve()
-    }, 35000)
+    }, 60000)
 
-    const unsubscribe = onValue(singleChatRef, (snapshot) => {
-      const data = snapshot.val()
-      if (!data) return
+    onValue(newChatRef, (snapshot) => {
+      const chat = snapshot.val()
+      if (!chat) return
 
-      if (data.answer) {
-        onChunk(data.answer)
-      }
-
-      if (data.status === 'completed') {
-        clearTimeout(timeoutId)
-        unsubscribe()
+      if (chat.status === 'completed' && chat.answer) {
+        clearTimeout(timeout)
+        off(newChatRef)
+        onChunk(chat.answer)
         onComplete()
-        resolve()
-      } else if (data.status === 'error') {
-        clearTimeout(timeoutId)
-        unsubscribe()
-        if (onError) onError(data.answer || 'Failed to receive answer.')
+      } else if (chat.status === 'error') {
+        clearTimeout(timeout)
+        off(newChatRef)
+        if (onError) onError(chat.answer || 'Failed to interrogate witness.')
         onComplete()
-        resolve()
       }
     })
-  })
+  } catch (error) {
+    console.error('Error sending chat message:', error)
+    if (onError) onError(error.message || 'Failed to send question.')
+    onComplete()
+  }
 }
 
 /**
- * Submits an accusation to Realtime Database and awaits evaluation from the server Cloud Function.
+ * Evaluates an accusation via Realtime Database trigger to Cloud Functions (Firebase AI Logic).
  * @param {string} gameId - The ID of the game.
  * @param {string} culpritId - The ID of the accused witness.
  * @param {string} motive - The player's proposed motive.
  * @param {string} teamId - The UID of the current team.
- * @returns {Promise<boolean>} - Resolves to true if the accusation is correct, false otherwise.
+ * @returns {Promise<boolean>} - Resolves to true if correct, false otherwise.
  */
 export async function evaluateAccusation(gameId, culpritId, motive, teamId) {
-  const accusationsRef = dbRef(db, `games/${gameId}/accusations`)
+  try {
+    const accusationsRef = dbRef(db, `games/${gameId}/accusations`)
+    const newAccusationRef = push(accusationsRef)
 
-  const newAccusationRef = await push(accusationsRef, {
-    teamId: teamId,
-    culprit: culpritId,
-    motive: motive.trim(),
-    status: 'pending',
-    timestamp: serverTimestamp(),
-  })
-
-  const accusationKey = newAccusationRef.key
-  if (!accusationKey) return false
-
-  const singleAccusationRef = dbRef(db, `games/${gameId}/accusations/${accusationKey}`)
-
-  return new Promise((resolve) => {
-    const timeoutId = setTimeout(() => {
-      off(singleAccusationRef)
-      resolve(false)
-    }, 30000)
-
-    const unsubscribe = onValue(singleAccusationRef, (snapshot) => {
-      const data = snapshot.val()
-      if (!data) return
-
-      if (data.status === 'evaluated') {
-        clearTimeout(timeoutId)
-        unsubscribe()
-        resolve(data.isCorrect === true)
-      } else if (data.status === 'error') {
-        clearTimeout(timeoutId)
-        unsubscribe()
-        resolve(false)
-      }
+    await set(newAccusationRef, {
+      teamId,
+      culprit: culpritId,
+      motive: motive.trim(),
+      status: 'pending',
+      timestamp: serverTimestamp(),
     })
-  })
+
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        off(newAccusationRef)
+        resolve(false)
+      }, 60000)
+
+      onValue(newAccusationRef, (snapshot) => {
+        const accusation = snapshot.val()
+        if (!accusation) return
+
+        if (accusation.status === 'evaluated') {
+          clearTimeout(timeout)
+          off(newAccusationRef)
+          resolve(!!accusation.isCorrect)
+        } else if (accusation.status === 'error') {
+          clearTimeout(timeout)
+          off(newAccusationRef)
+          resolve(false)
+        }
+      })
+    })
+  } catch (error) {
+    console.error('Error evaluating accusation:', error)
+    return false
+  }
 }

@@ -2,7 +2,6 @@ import { initializeApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 import { getAuth } from 'firebase/auth'
 import { getStorage } from 'firebase/storage'
-import { getFunctions } from 'firebase/functions'
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check'
 
 const firebaseConfig = {
@@ -42,6 +41,6 @@ export const appCheck = initializeAppCheck(app, {
 export const auth = getAuth(app)
 export const db = getDatabase(app)
 export const storage = getStorage(app)
-export const functions = getFunctions(app, 'europe-west1')
+
 
 

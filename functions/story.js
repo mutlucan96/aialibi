@@ -1,9 +1,8 @@
 import { onValueWritten } from 'firebase-functions/v2/database'
-import { SchemaType } from '@google/generative-ai'
-import { db, genAI, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.js'
+import { db, ai, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.js'
 
 /**
- * RTDB Event Trigger: Generates a complete mystery case file based on settings.
+ * RTDB Event Trigger: Generates a complete mystery case file based on settings via Google GenAI.
  * Triggered on: /games/{gameId}/storyRequest
  */
 export const onStoryRequested = onValueWritten(
@@ -26,55 +25,85 @@ export const onStoryRequested = onValueWritten(
     const reqRef = db.ref(`games/${gameId}/storyRequest`)
 
     try {
-      const storySchema = {
-        type: SchemaType.OBJECT,
-        properties: {
-          crime: { type: SchemaType.STRING },
-          clue: { type: SchemaType.STRING },
-          culprit: { type: SchemaType.STRING },
-          motive: { type: SchemaType.STRING },
-          witnesses: {
-            type: SchemaType.ARRAY,
-            items: {
-              type: SchemaType.OBJECT,
-              properties: {
-                name: { type: SchemaType.STRING },
-                personality: { type: SchemaType.STRING },
-                outfit: { type: SchemaType.STRING },
-              },
-              required: ['name', 'personality', 'outfit'],
-            },
-          },
-        },
-        required: ['crime', 'clue', 'culprit', 'motive', 'witnesses'],
-      }
-
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-3.7-flash',
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: storySchema,
-        },
-      })
-
       const prompt = `
-        You are a master detective story writer for an EFL (English as a Foreign Language) mystery classroom game.
-        Create a compelling mystery case file suitable for English language learners.
+        You are an award-winning mystery writer creating an engaging, highly original detective game for English language learners (EFL).
 
         Game Settings:
         - CEFR Language Level: ${settings.languageLevel || 'B1'}
         - Target Age: ${settings.targetAge || 'any'}
         - Duration: ${settings.timeLimit || 'unlimited'} minutes
-        - Target Vocabulary: ${settings.targetVocabulary || 'none'}
-        - Theme / Additional Info: ${settings.theme || 'none'}
-
+        - Target Vocabulary to naturally weave into the case: ${settings.targetVocabulary || 'none'}
+        - Specific Theme / Setting Request: ${settings.theme || 'none'}
+        
         Generate exactly 4 distinct witnesses. One of the witnesses MUST be the culprit.
         Ensure witness personalities contain rich details, relationships with other characters, and clues to discover during interrogation.
         Define a unified cartoonish / vector art style in the outfit description.
+        
+        CRIME DESCRIPTION: Write a vivid, detailed 3-5 sentence narrative. Clearly set the atmosphere, location, exact time of the crime, what valuable or strange object was stolen or sabotaged, the suspicious locked-room/event circumstances, and explain why only the 4 witnesses are the suspects.
+        KEY CLUE: A specific, tangible clue left at the scene (e.g. a distinctive fabric fiber, a specific footprint, an odd scent, a dropped ticket with a timestamp, a peculiar tool) that subtly points to the culprit.
+        WITNESSES (EXACTLY 4):
+           - Each must have a distinct, memorable name and vivid occupation/role.
+           - Rich personality with quirks, relationship to other characters, alibi, and motive suspicion.
+           - Detailed outfit description in a vector cartoon illustration style (mention specific clothing, colors, distinctive hats/glasses/accessories) so it can be illustrated.
+        CULPRIT: Exactly one of the 4 witnesses MUST be the culprit. The 'culprit' string MUST match that witness's 'name' exactly.
+        MOTIVE: A clear, plausible reason why the culprit committed the crime.
+        Keep all English vocabulary accessible and suitable for ${settings.languageLevel || 'B1'} level.
       `
 
-      const result = await model.generateContent(prompt)
-      const storyResponse = JSON.parse(result.response.text())
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.7-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              crime: {
+                type: 'STRING',
+                description:
+                  'Detailed 3-5 sentence narrative describing the crime, setting, and suspects.',
+              },
+              clue: {
+                type: 'STRING',
+                description: 'Tangible clue discovered at the crime scene.',
+              },
+              culprit: {
+                type: 'STRING',
+                description: 'The exact name of the witness who committed the crime.',
+              },
+              motive: {
+                type: 'STRING',
+                description: 'The reason why the culprit committed the crime.',
+              },
+              witnesses: {
+                type: 'ARRAY',
+                items: {
+                  type: 'OBJECT',
+                  properties: {
+                    name: { type: 'STRING' },
+                    personality: { type: 'STRING' },
+                    outfit: {
+                      type: 'STRING',
+                      description:
+                        'Detailed vector cartoon outfit description with colors and accessories.',
+                    },
+                  },
+                  required: ['name', 'personality', 'outfit'],
+                },
+              },
+            },
+            required: ['crime', 'clue', 'culprit', 'motive', 'witnesses'],
+          },
+        },
+      })
+
+      const responseText = response.text
+      if (!responseText) {
+        throw new Error(
+          'AI returned an empty response. The request may have been blocked by safety filters.',
+        )
+      }
+      const storyResponse = JSON.parse(responseText)
 
       const witnessesWithIds = storyResponse.witnesses.map((w) => ({
         ...w,

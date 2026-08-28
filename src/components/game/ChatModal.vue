@@ -7,9 +7,7 @@
   >
     <v-card class="d-flex flex-column">
       <v-card-title class="d-flex align-center">
-        <v-avatar size="48" class="mr-3">
-          <v-img :src="witness.imageUrl" :alt="witness.name"></v-img>
-        </v-avatar>
+        <WitnessAvatar :witness="witness" :size="48" custom-class="mr-3" />
         <span>{{ witness.name }}</span>
         <v-spacer></v-spacer>
         <v-btn variant="text" icon @click="!loading && $emit('close')" :disabled="loading">
@@ -70,6 +68,7 @@
 
 <script setup>
 import { ref, watch, nextTick, onMounted } from 'vue'
+import WitnessAvatar from '@/components/common/WitnessAvatar.vue'
 
 /**
  * @import {PropType} from 'vue'

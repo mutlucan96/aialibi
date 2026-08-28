@@ -212,6 +212,7 @@ async function handleGenerateImages() {
     witnesses.value = await generateImages(props.gameId, witnesses.value)
   } catch (error) {
     console.error('Error generating images:', error)
+    alert('Error generating images: ' + error.message)
   } finally {
     isGeneratingImages.value = false
   }

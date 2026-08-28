@@ -7,7 +7,7 @@
         @click="!isWitnessDisabled(witness.id) && $emit('open-chat', witness.id)"
         @click.stop="!isWitnessDisabled(witness.id) && $emit('update-talking-to', witness.id)"
       >
-        <v-img :src="witness.imageUrl" aspect-ratio="1"></v-img>
+        <WitnessAvatar :witness="witness" size="100%" rounded="square" style="aspect-ratio: 1;" />
         <v-card-title class="text-body-2 pa-1 text-center mb-0 pb-0">{{
           witness.name
         }}</v-card-title>
@@ -20,6 +20,7 @@
 </template>
 
 <script setup>
+import WitnessAvatar from '@/components/common/WitnessAvatar.vue'
 /**
  * @import {Witness} from '@/types.js'
  * @import {PropType} from 'vue'

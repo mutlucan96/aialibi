@@ -1,9 +1,9 @@
 import { onValueCreated } from 'firebase-functions/v2/database'
-import { db, genAI, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.js'
+import { db, ai, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.js'
 import { banUserGlobally, isRateLimited, recordUserActivity } from './utils/moderation.js'
 
 /**
- * RTDB Event Trigger: Handles witness interrogation questions created by players.
+ * RTDB Event Trigger: Handles witness interrogation questions created by players via gemini-3.7-flash.
  * Triggered on: /games/{gameId}/chats/{witnessId}/{chatId}
  */
 export const onChatCreated = onValueCreated(
@@ -71,8 +71,7 @@ export const onChatCreated = onValueCreated(
         .map((key) => allChats[key])
         .filter((chat) => chat && chat.question && chat.answer)
         .map(
-          (chat) =>
-            `Team ${chat.teamId} asked: '${chat.question}'\nYou answered: '${chat.answer}'`,
+          (chat) => `Team ${chat.teamId} asked: '${chat.question}'\nYou answered: '${chat.answer}'`,
         )
         .join('\n')
 
@@ -102,10 +101,12 @@ export const onChatCreated = onValueCreated(
         Now, Team ${teamId} asks you: "${chatData.question}"
       `
 
-      // 4. Generate AI Response with gemini-3.7-flash
-      const model = genAI.getGenerativeModel({ model: 'gemini-3.7-flash' })
-      const result = await model.generateContent(masterPrompt)
-      const aiResponse = result.response.text().trim()
+      // 4. Generate AI Response
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.5-flash-lite',
+        contents: masterPrompt,
+      })
+      const aiResponse = response.text.trim()
 
       // 5. Update Chat in RTDB with the completed answer
       await chatRef.update({

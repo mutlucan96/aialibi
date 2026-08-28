@@ -39,11 +39,13 @@ export const onStoryRequested = onValueWritten(
         Ensure witness personalities contain rich details, relationships with other characters, and clues to discover during interrogation.
         Define a unified cartoonish / vector art style in the outfit description.
         
-        CRIME DESCRIPTION: A detailed description of the crime that was committed. It should also introduce witnesses since players will not see witness profiles. Also include some clues here.
+        CRIME DESCRIPTION: A captivating description of the crime that was committed. Focus on the scene and what happened. Do NOT include witness introductions here as they have their own character cards. Also include some clues here.
         KEY CLUE: A specific, tangible clue left at the scene (e.g. a distinctive fabric fiber, a specific footprint, an odd scent, a dropped ticket with a timestamp, a peculiar tool) that subtly points to the culprit.
         WITNESSES (EXACTLY 4):
            - Each must have a distinct, memorable name and vivid occupation/role.
-           - Rich personality with quirks, relationship to other characters, alibi, and motive suspicion.
+           - DESCRIPTION: A short, engaging 1-2 sentence public introduction (e.g., their job/role, connection to the scene, or why they are present) displayed on their witness card.
+           - PERSONALITY: Rich secret personality profile with quirks, relationship to other characters, alibi, hidden secrets, and motive suspicion (used internally by the AI during interrogation).
+           - OUTFIT: Visual description for character portrait generation.
         CULPRIT: Exactly one of the 4 witnesses MUST be the culprit. The 'culprit' string MUST match that witness's 'name' exactly.
         MOTIVE: A clear, plausible reason why the culprit committed the crime.
         Keep all English vocabulary accessible and suitable for ${settings.languageLevel || 'B1'} level.
@@ -60,7 +62,7 @@ export const onStoryRequested = onValueWritten(
               crime: {
                 type: 'STRING',
                 description:
-                  'A description of the crime that was committed. It should also introduce witnesses since players will not see witness profiles.',
+                  'A description of the crime that was committed. Focus on the event, scene, and what happened without including full witness introductions.',
               },
               clue: {
                 type: 'STRING',
@@ -80,6 +82,11 @@ export const onStoryRequested = onValueWritten(
                   type: 'OBJECT',
                   properties: {
                     name: { type: 'STRING' },
+                    description: {
+                      type: 'STRING',
+                      description:
+                        'A short 1-2 sentence introduction or background of the witness to be displayed on their character card.',
+                    },
                     personality: {
                       type: 'STRING',
                       description:
@@ -91,7 +98,7 @@ export const onStoryRequested = onValueWritten(
                         "A purely visual description of the character's appearance, suitable for an image generation prompt. If related (not necessary), include the character's gender, age, personality, expression, and any other relevant details that relates to physical appearance. Also add a art style and theme and keep it same for every witness. Also define a specific detailed art style (avoid realistic) and keep it same for each witnesses to have a consistent style across witnesses",
                     },
                   },
-                  required: ['name', 'personality', 'outfit'],
+                  required: ['name', 'description', 'personality', 'outfit'],
                 },
               },
             },

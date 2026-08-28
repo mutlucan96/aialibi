@@ -11,7 +11,7 @@
     "dev": "pnpm vite",
     "build": "pnpm vite build",
     "preview": "pnpm vite preview",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "lint": "eslint . --fix",
     "format": "prettier --write src/"
   },
   "dependencies": {

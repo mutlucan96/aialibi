@@ -24,12 +24,15 @@
   </v-expand-transition>
 
   <!-- Witness List -->
-  <v-row class="pa-2">
-    <v-col v-for="(witness, index) in localWitnesses" :key="index" cols="12" md="6" class="pa-1">
-      <v-card>
-        <div class="d-flex align-center pa-1">
-          <WitnessAvatar :witness="witness" :size="96" />
-          <v-card-title class="pl-4">{{ witness.name }}</v-card-title>
+  <v-row class="pa-1" align="stretch">
+    <v-col v-for="(witness, index) in localWitnesses" :key="index" cols="12" md="6" class="pa-1 d-flex">
+      <v-card class="w-100 pa-2 d-flex align-center" rounded="lg" elevation="1">
+        <WitnessAvatar :witness="witness" :size="80" rounded="lg" />
+        <div class="pl-4 flex-grow-1">
+          <div class="text-subtitle-1 font-weight-bold">{{ witness.name }}</div>
+          <div v-if="witness.description" class="text-body-2 text-medium-emphasis mt-1">
+            {{ witness.description }}
+          </div>
         </div>
       </v-card>
     </v-col>

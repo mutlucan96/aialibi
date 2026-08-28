@@ -8,7 +8,15 @@
     <v-card class="d-flex flex-column">
       <v-card-title class="d-flex align-center">
         <WitnessAvatar :witness="witness" :size="48" custom-class="mr-3" />
-        <span>{{ witness.name }}</span>
+        <div class="d-flex flex-column">
+          <span class="text-subtitle-1 font-weight-bold">{{ witness.name }}</span>
+          <span
+            v-if="witness.description"
+            class="text-caption text-medium-emphasis font-weight-regular"
+          >
+            {{ witness.description }}
+          </span>
+        </div>
         <v-spacer></v-spacer>
         <v-btn variant="text" icon @click="!loading && $emit('close')" :disabled="loading">
           <v-icon>mdi-close</v-icon>

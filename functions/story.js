@@ -26,7 +26,7 @@ export const onStoryRequested = onValueWritten(
 
     try {
       const prompt = `
-        You are an award-winning mystery writer creating an engaging, highly original detective game for English language learners (EFL).
+        You are a master detective story writer. Based on the following game settings, create a compelling mystery case file for English language learners.
 
         Game Settings:
         - CEFR Language Level: ${settings.languageLevel || 'B1'}
@@ -39,12 +39,11 @@ export const onStoryRequested = onValueWritten(
         Ensure witness personalities contain rich details, relationships with other characters, and clues to discover during interrogation.
         Define a unified cartoonish / vector art style in the outfit description.
         
-        CRIME DESCRIPTION: Write a vivid, detailed 3-5 sentence narrative. Clearly set the atmosphere, location, exact time of the crime, what valuable or strange object was stolen or sabotaged, the suspicious locked-room/event circumstances, and explain why only the 4 witnesses are the suspects.
+        CRIME DESCRIPTION: A detailed description of the crime that was committed. It should also introduce witnesses since players will not see witness profiles. Also include some clues here.
         KEY CLUE: A specific, tangible clue left at the scene (e.g. a distinctive fabric fiber, a specific footprint, an odd scent, a dropped ticket with a timestamp, a peculiar tool) that subtly points to the culprit.
         WITNESSES (EXACTLY 4):
            - Each must have a distinct, memorable name and vivid occupation/role.
            - Rich personality with quirks, relationship to other characters, alibi, and motive suspicion.
-           - Detailed outfit description in a vector cartoon illustration style (mention specific clothing, colors, distinctive hats/glasses/accessories) so it can be illustrated.
         CULPRIT: Exactly one of the 4 witnesses MUST be the culprit. The 'culprit' string MUST match that witness's 'name' exactly.
         MOTIVE: A clear, plausible reason why the culprit committed the crime.
         Keep all English vocabulary accessible and suitable for ${settings.languageLevel || 'B1'} level.
@@ -61,7 +60,7 @@ export const onStoryRequested = onValueWritten(
               crime: {
                 type: 'STRING',
                 description:
-                  'Detailed 3-5 sentence narrative describing the crime, setting, and suspects.',
+                  'A description of the crime that was committed. It should also introduce witnesses since players will not see witness profiles.',
               },
               clue: {
                 type: 'STRING',
@@ -81,11 +80,15 @@ export const onStoryRequested = onValueWritten(
                   type: 'OBJECT',
                   properties: {
                     name: { type: 'STRING' },
-                    personality: { type: 'STRING' },
+                    personality: {
+                      type: 'STRING',
+                      description:
+                        'A very detailed personality profile for the witness. This will be used by another AI to role-play as this character. Include their background, their relationship to the crime/victim, their personality, secrets, clues and how they might behave during an interrogation. This needs to be rich enough for an AI to generate dialogue from. It should include information about other witnesses and how they know them. It should also include possible questions that the player might ask and how they might answer, to help them solve the case.',
+                    },
                     outfit: {
                       type: 'STRING',
                       description:
-                        'Detailed vector cartoon outfit description with colors and accessories.',
+                        "A purely visual description of the character's appearance, suitable for an image generation prompt. If related (not necessary), include the character's gender, age, personality, expression, and any other relevant details that relates to physical appearance. Also add a art style and theme and keep it same for every witness. Also define a specific detailed art style (avoid realistic) and keep it same for each witnesses to have a consistent style across witnesses",
                     },
                   },
                   required: ['name', 'personality', 'outfit'],

@@ -5,13 +5,27 @@
       <v-card-text>
         <v-select
           v-model="selectedCulprit"
-          :items="game.witnesses"
+          :items="witnessesList"
           item-title="name"
           item-value="id"
           label="Choose the Culprit"
           variant="outlined"
           class="mb-4"
-        ></v-select>
+        >
+          <template #selection="{ item }">
+            <div class="d-flex align-center">
+              <WitnessAvatar :witness="item.raw" :size="28" custom-class="mr-2" />
+              <span>{{ item.raw.name }}</span>
+            </div>
+          </template>
+          <template #item="{ props: itemProps, item }">
+            <v-list-item v-bind="itemProps" :title="item.raw.name">
+              <template #prepend>
+                <WitnessAvatar :witness="item.raw" :size="36" custom-class="mr-3" />
+              </template>
+            </v-list-item>
+          </template>
+        </v-select>
 
         <v-textarea
           v-model="motive"
@@ -42,9 +56,15 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import WitnessAvatar from '@/components/common/WitnessAvatar.vue'
 
+/**
+ * @import {Game, Witness} from '@/types.js'
+ * @import {PropType} from 'vue'
+ */
 const props = defineProps({
+  /** @type {PropType<Game>} */
   game: {
     type: Object,
     required: true,
@@ -64,6 +84,13 @@ const emit = defineEmits(['submit-accusation', 'close', 'update:modelValue'])
 const dialog = ref(props.modelValue)
 const selectedCulprit = ref(null)
 const motive = ref('')
+
+const witnessesList = computed(() => {
+  if (!props.game?.witnesses) return []
+  return Array.isArray(props.game.witnesses)
+    ? props.game.witnesses
+    : Object.values(props.game.witnesses)
+})
 
 watch(
   () => props.modelValue,
@@ -94,3 +121,4 @@ const submitAccusation = () => {
 </script>
 
 <style scoped></style>
+

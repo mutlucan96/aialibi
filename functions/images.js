@@ -24,33 +24,43 @@ async function generateWitnessSpritesheet(witnesses, context = {}) {
   const w2 = witnesses[2] || { name: 'Character 3', outfit: 'colorful clothing' }
   const w3 = witnesses[3] || { name: 'Character 4', outfit: 'colorful clothing' }
 
-  const formatWitness = (w) => {
-    const desc = w.description ? ` (${w.description})` : ''
-    const outfit = w.outfit || 'colorful clothing'
-    return `${w.name}${desc}, wearing ${outfit}`
+  const formatWitnessVisual = (w) => {
+    const roleHint = w.description ? `representing a ${w.description}` : 'character'
+    const outfit = w.outfit || 'distinct colorful attire'
+    return `${roleHint}, dressed in ${outfit}`
   }
 
-  const storyContext = context.crime ? `Mystery Case Context / Setting: ${context.crime}\n` : ''
-  const themeContext = context.theme ? `Setting Theme / Tone: ${context.theme}\n` : ''
+  const storyContext = context.crime
+    ? `Mystery setting and case background context for inspiration: "${context.crime}"\n`
+    : ''
+  const themeContext = context.theme ? `Theme: "${context.theme}"\n` : ''
 
-  const prompt = `A seamless 2x2 grid containing 4 distinct character portrait avatars in a unified colorful vector cartoon illustration style. All 4 characters must share a cohesive art style and fit the mystery story setting.
+  const prompt = `A square 1:1 image containing a seamless 2x2 grid of 4 character portrait avatars in a unified colorful 2D vector cartoon illustration style.
 ${storyContext}${themeContext}
-Flat 2D digital art, full-bleed edge-to-edge illustrations, no outer frames, no white margins, no divider lines. No full-body or full-face portraits.
-Close-up centered head-and-shoulders portrait filling each quadrant with expressive designs fitting the story:
-- Top-Left quadrant: ${formatWitness(w0)}.
-- Top-Right quadrant: ${formatWitness(w1)}.
-- Bottom-Left quadrant: ${formatWitness(w2)}.
-- Bottom-Right quadrant: ${formatWitness(w3)}.
-Even 2x2 grid layout, 4 equal quadrants, vibrant colors.`
+CRITICAL RULES:
+1. STRICTLY NO TEXT: Do NOT include any names, words, letters, labels, titles, numbers, captions, watermarks, or text overlays anywhere in the image. This must be pure illustration without any writing. 
+2. SQUARE 1:1 FORMAT: Exactly 4 equal square quadrants (2x2 grid) filling the entire 1:1 square canvas. No outer borders, no white margins, no frames, no divider lines.
+3. CLOSE-UP HEAD-AND-SHOULDERS: Centered portraits. No full-body or full-face portraits.
 
-  // 1. Primary: gemini-3.1-flash-lite-image via generateContent with responseModalities: ['IMAGE']
+Quadrants:
+- Top-Left quadrant: ${formatWitnessVisual(w0)}.
+- Top-Right quadrant: ${formatWitnessVisual(w1)}.
+- Bottom-Left quadrant: ${formatWitnessVisual(w2)}.
+- Bottom-Right quadrant: ${formatWitnessVisual(w3)}.
+
+All 4 characters must share a cohesive 2D cartoon art style fitting the mystery setting. Vibrant colors.`
+
+  // 1. Primary
   try {
-    console.log('Generating 2x2 witness spritesheet using gemini-3.1-flash-lite-image...')
+    console.log('Generating 2x2 witness spritesheet using gemini-2.5-flash-image...')
     const response = await ai.models.generateContent({
-      model: 'gemini-3.1-flash-lite-image',
+      model: 'gemini-2.5-flash-image',
       contents: prompt,
       config: {
         responseModalities: ['IMAGE'],
+        imageConfig: {
+          aspectRatio: '1:1',
+        },
         safetySettings,
       },
     })
@@ -63,16 +73,41 @@ Even 2x2 grid layout, 4 equal quadrants, vibrant colors.`
       }
     }
     console.warn(
-      `gemini-3.1-flash-lite-image returned no inlineData. FinishReason: ${candidate?.finishReason}`,
+      `gemini-2.5-flash-image returned no inlineData. FinishReason: ${candidate?.finishReason}`,
     )
-  } catch (liteErr) {
+  } catch (genaiErr) {
     console.warn(
-      'gemini-3.1-flash-lite-image error, falling back to imagen-3.0:',
-      liteErr?.message || liteErr,
+      'gemini-2.5-flash-image error, trying gemini-3.1-flash-lite-image:',
+      genaiErr?.message || genaiErr,
     )
+    try {
+      const responseLite = await ai.models.generateContent({
+        model: 'gemini-3.1-flash-lite-image',
+        contents: prompt,
+        config: {
+          responseModalities: ['IMAGE'],
+          imageConfig: {
+            aspectRatio: '1:1',
+          },
+          safetySettings,
+        },
+      })
+      const candidateLite = responseLite.candidates?.[0]
+      const partsLite = candidateLite?.content?.parts || []
+      for (const part of partsLite) {
+        if (part.inlineData?.data) {
+          return part.inlineData.data
+        }
+      }
+    } catch (liteErr) {
+      console.warn(
+        'gemini-3.1-flash-lite-image error, falling back to imagen-3.0:',
+        liteErr?.message || liteErr,
+      )
+    }
   }
 
-  // 2. Fallback: imagen-3.0-generate-002
+  // 2. Fallback
   try {
     console.log('Generating 2x2 witness spritesheet using imagen-3.0-generate-002 fallback...')
     const imgRes = await ai.models.generateImages({

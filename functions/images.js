@@ -50,11 +50,11 @@ Quadrants:
 
 All 4 characters must share a cohesive 2D cartoon art style fitting the mystery setting. Vibrant colors.`
 
-  // 1. Primary
+  // Generate 2x2 spritesheet using gemini-3.1-flash-lite-image
   try {
-    console.log('Generating 2x2 witness spritesheet using gemini-2.5-flash-image...')
+    console.log('Generating 2x2 witness spritesheet using gemini-3.1-flash-lite-image...')
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
+      model: 'gemini-3.1-flash-lite-image',
       contents: prompt,
       config: {
         responseModalities: ['IMAGE'],
@@ -73,59 +73,10 @@ All 4 characters must share a cohesive 2D cartoon art style fitting the mystery 
       }
     }
     console.warn(
-      `gemini-2.5-flash-image returned no inlineData. FinishReason: ${candidate?.finishReason}`,
+      `gemini-3.1-flash-lite-image returned no inlineData. FinishReason: ${candidate?.finishReason}`,
     )
-  } catch (genaiErr) {
-    console.warn(
-      'gemini-2.5-flash-image error, trying gemini-3.1-flash-lite-image:',
-      genaiErr?.message || genaiErr,
-    )
-    try {
-      const responseLite = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-lite-image',
-        contents: prompt,
-        config: {
-          responseModalities: ['IMAGE'],
-          imageConfig: {
-            aspectRatio: '1:1',
-          },
-          safetySettings,
-        },
-      })
-      const candidateLite = responseLite.candidates?.[0]
-      const partsLite = candidateLite?.content?.parts || []
-      for (const part of partsLite) {
-        if (part.inlineData?.data) {
-          return part.inlineData.data
-        }
-      }
-    } catch (liteErr) {
-      console.warn(
-        'gemini-3.1-flash-lite-image error, falling back to imagen-3.0:',
-        liteErr?.message || liteErr,
-      )
-    }
-  }
-
-  // 2. Fallback
-  try {
-    console.log('Generating 2x2 witness spritesheet using imagen-3.0-generate-002 fallback...')
-    const imgRes = await ai.models.generateImages({
-      model: 'imagen-3.0-generate-002',
-      prompt,
-      config: {
-        numberOfImages: 1,
-        outputMimeType: 'image/jpeg',
-        aspectRatio: '1:1',
-        safetySettings,
-      },
-    })
-
-    if (imgRes?.generatedImages?.[0]?.image?.imageBytes) {
-      return imgRes.generatedImages[0].image.imageBytes
-    }
-  } catch (imgErr) {
-    console.warn('imagen-3.0 fallback error:', imgErr?.message || imgErr)
+  } catch (error) {
+    console.error('Error generating image with gemini-3.1-flash-lite-image:', error?.message || error)
   }
 
   return null

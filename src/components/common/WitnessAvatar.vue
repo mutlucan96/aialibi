@@ -42,14 +42,19 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  /** Optional custom zoom factor (default: 235% for zoomed-in borderless cropping) */
+  zoom: {
+    type: Number,
+    default: 235,
+  },
 })
 
-// CSS sprite positions for a 2x2 grid (1:1 aspect ratio)
+// CSS sprite positions for a zoomed 2x2 grid (crops out outer borders and center dividers)
 const spritePositions = [
-  '0% 0%',     // 0: Top-Left
-  '100% 0%',   // 1: Top-Right
-  '0% 100%',   // 2: Bottom-Left
-  '100% 100%', // 3: Bottom-Right
+  '8% 8%',     // 0: Top-Left (inset to hide top/left outer border & center divider)
+  '92% 8%',    // 1: Top-Right (inset to hide top/right outer border & center divider)
+  '8% 92%',    // 2: Bottom-Left (inset to hide bottom/left outer border & center divider)
+  '92% 92%',   // 3: Bottom-Right (inset to hide bottom/right outer border & center divider)
 ]
 
 const isSprite = computed(() => {
@@ -85,12 +90,14 @@ const avatarStyle = computed(() => {
 
   if (isSprite.value) {
     const idx = Number(props.witness.spriteIndex) % 4
-    const pos = spritePositions[idx] || '0% 0%'
+    const pos = spritePositions[idx] || '8% 8%'
+    const zoomSize = `${props.zoom}% ${props.zoom}%`
+
     return {
       width: sizeValue,
       height: sizeValue,
       backgroundImage: `url("${props.witness.imageUrl}")`,
-      backgroundSize: '200% 200%',
+      backgroundSize: zoomSize,
       backgroundPosition: pos,
       backgroundRepeat: 'no-repeat',
       flexShrink: 0,

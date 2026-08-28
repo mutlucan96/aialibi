@@ -20,13 +20,14 @@ async function generateWitnessSpritesheet(witnesses) {
   const w2 = witnesses[2] || { name: 'Character 3', outfit: 'colorful clothing' }
   const w3 = witnesses[3] || { name: 'Character 4', outfit: 'colorful clothing' }
 
-  const prompt = `A 2x2 grid containing 4 distinct character portrait avatars in a unified colorful vector cartoon illustration style.
-Flat 2D digital art, clean simple light pastel background, centered head and shoulders portrait in each quadrant with friendly expressions:
+  const prompt = `A seamless 2x2 grid containing 4 distinct character portrait avatars in a unified colorful vector cartoon illustration style.
+Flat 2D digital art, solid light pastel background, full-bleed edge-to-edge illustrations, no outer frames, no white margins, no divider lines.
+Close-up centered head-and-shoulders portrait filling each quadrant with friendly expressions:
 - Top-Left quadrant: ${w0.name}, wearing ${w0.outfit}.
 - Top-Right quadrant: ${w1.name}, wearing ${w1.outfit}.
 - Bottom-Left quadrant: ${w2.name}, wearing ${w2.outfit}.
 - Bottom-Right quadrant: ${w3.name}, wearing ${w3.outfit}.
-Even 2x2 grid layout, 4 equal quadrants, vibrant colors, clear borders.`
+Even 2x2 grid layout, 4 equal quadrants, vibrant colors.`
 
   // 1. Primary: gemini-3.1-flash-lite-image via generateContent with responseModalities: ['IMAGE']
   try {

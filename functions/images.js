@@ -60,6 +60,7 @@ All 4 characters must share a cohesive 2D cartoon art style fitting the mystery 
         responseModalities: ['IMAGE'],
         imageConfig: {
           aspectRatio: '1:1',
+          imageSize: '512',
         },
         safetySettings,
       },
@@ -76,7 +77,10 @@ All 4 characters must share a cohesive 2D cartoon art style fitting the mystery 
       `gemini-3.1-flash-lite-image returned no inlineData. FinishReason: ${candidate?.finishReason}`,
     )
   } catch (error) {
-    console.error('Error generating image with gemini-3.1-flash-lite-image:', error?.message || error)
+    console.error(
+      'Error generating image with gemini-3.1-flash-lite-image:',
+      error?.message || error,
+    )
   }
 
   return null

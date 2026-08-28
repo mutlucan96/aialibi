@@ -1,22 +1,30 @@
 <template>
   <div
-    v-if="witness?.imageUrl"
-    :class="['witness-avatar', roundedClass, customClass]"
-    :style="avatarStyle"
-    :aria-label="witness?.name"
-  />
-  <v-avatar
-    v-else
-    :size="numericSize"
-    :class="[roundedClass, customClass]"
-    color="grey-lighten-1"
+    :class="['witness-avatar-container', 'position-relative', roundedClass, customClass]"
+    :style="containerStyle"
   >
-    <span :class="initialsClass">{{ initial }}</span>
-  </v-avatar>
+    <!-- Fallback / Placeholder Avatar -->
+    <v-avatar
+      :size="numericSize"
+      :class="[roundedClass, 'witness-avatar-fallback']"
+      :style="fallbackStyle"
+      color="grey-lighten-2"
+    >
+      <span :class="initialsClass">{{ initial }}</span>
+    </v-avatar>
+
+    <!-- Smoothly Fading Image Layer -->
+    <div
+      v-if="witness?.imageUrl"
+      :class="['witness-avatar-image', roundedClass, { 'is-loaded': isLoaded }]"
+      :style="avatarStyle"
+      :aria-label="witness?.name"
+    />
+  </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 /**
  * @import {Witness} from '@/types.js'
@@ -49,6 +57,50 @@ const props = defineProps({
   },
 })
 
+const isLoaded = ref(false)
+const isLoading = ref(false)
+
+/**
+ * Preloads the image and toggles isLoaded / isLoading states for smooth transition.
+ * @param {string} [url] - Image URL to load.
+ */
+const checkAndLoadImage = (url) => {
+  if (!url) {
+    isLoaded.value = false
+    isLoading.value = false
+    return
+  }
+
+  isLoading.value = true
+  const img = new Image()
+  img.src = url
+
+  if (img.complete && img.naturalWidth !== 0) {
+    isLoaded.value = true
+    isLoading.value = false
+    return
+  }
+
+  img.onload = () => {
+    isLoaded.value = true
+    isLoading.value = false
+  }
+
+  img.onerror = () => {
+    isLoaded.value = false
+    isLoading.value = false
+  }
+}
+
+watch(
+  () => props.witness?.imageUrl,
+  (newUrl) => {
+    isLoaded.value = false
+    checkAndLoadImage(newUrl)
+  },
+  { immediate: true },
+)
+
 // CSS sprite positions for a zoomed 2x2 grid (crops out outer borders and center dividers)
 const spritePositions = [
   '8% 8%',     // 0: Top-Left (inset to hide top/left outer border & center divider)
@@ -68,6 +120,9 @@ const numericSize = computed(() => {
 })
 
 const initialsClass = computed(() => {
+  if (typeof props.size === 'string' && props.size.includes('%')) {
+    return 'text-h4 font-weight-bold'
+  }
   if (numericSize.value >= 80) return 'text-h3 font-weight-bold'
   if (numericSize.value >= 40) return 'text-h6 font-weight-medium'
   return 'text-caption font-weight-bold'
@@ -83,9 +138,26 @@ const initial = computed(() => {
   return props.witness?.name ? props.witness.name.charAt(0).toUpperCase() : '?'
 })
 
-const avatarStyle = computed(() => {
+const containerStyle = computed(() => {
   const sizeValue = typeof props.size === 'number' ? `${props.size}px` : props.size
+  return {
+    width: sizeValue,
+    height: sizeValue,
+    flexShrink: 0,
+  }
+})
 
+const fallbackStyle = computed(() => {
+  return {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  }
+})
+
+const avatarStyle = computed(() => {
   if (!props.witness?.imageUrl) return {}
 
   if (isSprite.value) {
@@ -94,33 +166,51 @@ const avatarStyle = computed(() => {
     const zoomSize = `${props.zoom}% ${props.zoom}%`
 
     return {
-      width: sizeValue,
-      height: sizeValue,
+      width: '100%',
+      height: '100%',
       backgroundImage: `url("${props.witness.imageUrl}")`,
       backgroundSize: zoomSize,
       backgroundPosition: pos,
       backgroundRepeat: 'no-repeat',
-      flexShrink: 0,
+      position: 'absolute',
+      top: 0,
+      left: 0,
     }
   }
 
   // Fallback for standalone single images
   return {
-    width: sizeValue,
-    height: sizeValue,
+    width: '100%',
+    height: '100%',
     backgroundImage: `url("${props.witness.imageUrl}")`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
-    flexShrink: 0,
+    position: 'absolute',
+    top: 0,
+    left: 0,
   }
 })
 </script>
 
 <style scoped>
-.witness-avatar {
+.witness-avatar-container {
   display: inline-block;
   overflow: hidden;
   box-sizing: border-box;
+}
+
+.witness-avatar-fallback {
+  user-select: none;
+}
+
+.witness-avatar-image {
+  opacity: 0;
+  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.witness-avatar-image.is-loaded {
+  opacity: 1;
 }
 </style>

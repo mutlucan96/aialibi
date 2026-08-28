@@ -5,9 +5,13 @@ import { db, storage, ai, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.j
 /**
  * Generates a 2x2 spritesheet containing portrait avatars for all 4 witnesses in a single AI call.
  * @param {Array<object>} witnesses - The array of 4 witness objects.
+ * @param {object} [context] - Contextual information about the mystery case, crime, and settings.
+ * @param {string} [context.crime] - Description of the crime.
+ * @param {string} [context.theme] - Theme or setting request.
+ * @param {string|number} [context.targetAge] - Target age for tone.
  * @returns {Promise<string|null>} Base64-encoded image data, or null on failure.
  */
-async function generateWitnessSpritesheet(witnesses) {
+async function generateWitnessSpritesheet(witnesses, context = {}) {
   const safetySettings = [
     { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
     { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
@@ -20,13 +24,23 @@ async function generateWitnessSpritesheet(witnesses) {
   const w2 = witnesses[2] || { name: 'Character 3', outfit: 'colorful clothing' }
   const w3 = witnesses[3] || { name: 'Character 4', outfit: 'colorful clothing' }
 
-  const prompt = `A seamless 2x2 grid containing 4 distinct character portrait avatars in a unified colorful vector cartoon illustration style.
-Flat 2D digital art, solid light pastel background, full-bleed edge-to-edge illustrations, no outer frames, no white margins, no divider lines.
-Close-up centered head-and-shoulders portrait filling each quadrant with friendly expressions:
-- Top-Left quadrant: ${w0.name}, wearing ${w0.outfit}.
-- Top-Right quadrant: ${w1.name}, wearing ${w1.outfit}.
-- Bottom-Left quadrant: ${w2.name}, wearing ${w2.outfit}.
-- Bottom-Right quadrant: ${w3.name}, wearing ${w3.outfit}.
+  const formatWitness = (w) => {
+    const desc = w.description ? ` (${w.description})` : ''
+    const outfit = w.outfit || 'colorful clothing'
+    return `${w.name}${desc}, wearing ${outfit}`
+  }
+
+  const storyContext = context.crime ? `Mystery Case Context / Setting: ${context.crime}\n` : ''
+  const themeContext = context.theme ? `Setting Theme / Tone: ${context.theme}\n` : ''
+
+  const prompt = `A seamless 2x2 grid containing 4 distinct character portrait avatars in a unified colorful vector cartoon illustration style. All 4 characters must share a cohesive art style and fit the mystery story setting.
+${storyContext}${themeContext}
+Flat 2D digital art, full-bleed edge-to-edge illustrations, no outer frames, no white margins, no divider lines. No full-body or full-face portraits.
+Close-up centered head-and-shoulders portrait filling each quadrant with expressive designs fitting the story:
+- Top-Left quadrant: ${formatWitness(w0)}.
+- Top-Right quadrant: ${formatWitness(w1)}.
+- Bottom-Left quadrant: ${formatWitness(w2)}.
+- Bottom-Right quadrant: ${formatWitness(w3)}.
 Even 2x2 grid layout, 4 equal quadrants, vibrant colors.`
 
   // 1. Primary: gemini-3.1-flash-lite-image via generateContent with responseModalities: ['IMAGE']
@@ -48,9 +62,14 @@ Even 2x2 grid layout, 4 equal quadrants, vibrant colors.`
         return part.inlineData.data
       }
     }
-    console.warn(`gemini-3.1-flash-lite-image returned no inlineData. FinishReason: ${candidate?.finishReason}`)
+    console.warn(
+      `gemini-3.1-flash-lite-image returned no inlineData. FinishReason: ${candidate?.finishReason}`,
+    )
   } catch (liteErr) {
-    console.warn('gemini-3.1-flash-lite-image error, falling back to imagen-3.0:', liteErr?.message || liteErr)
+    console.warn(
+      'gemini-3.1-flash-lite-image error, falling back to imagen-3.0:',
+      liteErr?.message || liteErr,
+    )
   }
 
   // 2. Fallback: imagen-3.0-generate-002
@@ -101,8 +120,11 @@ export const onImageRequested = onValueWritten(
     const reqRef = db.ref(`games/${gameId}/imageRequest`)
 
     try {
-      const witnessesSnap = await db.ref(`games/${gameId}/witnesses`).once('value')
-      const witnesses = witnessesSnap.val()
+      const gameSnap = await db.ref(`games/${gameId}`).once('value')
+      const game = gameSnap.val() || {}
+      const witnesses = game.witnesses
+      const story = game.story || {}
+      const settings = game.settings || {}
 
       if (!witnesses) {
         await reqRef.update({ status: 'completed' })
@@ -112,9 +134,15 @@ export const onImageRequested = onValueWritten(
       const witnessesArray = Array.isArray(witnesses) ? witnesses : Object.values(witnesses)
       const bucket = storage.bucket()
 
-      console.log(`Generating 2x2 spritesheet for ${witnessesArray.length} witnesses in 1 call (Game: ${gameId})`)
+      console.log(
+        `Generating 2x2 spritesheet for ${witnessesArray.length} witnesses in 1 call (Game: ${gameId})`,
+      )
 
-      const base64Data = await generateWitnessSpritesheet(witnessesArray)
+      const base64Data = await generateWitnessSpritesheet(witnessesArray, {
+        crime: story.crime || story.crimeDescription,
+        theme: settings.theme,
+        targetAge: settings.targetAge,
+      })
 
       if (!base64Data) {
         const errorMsg = 'Image generation failed to return image data. Check Cloud Functions logs.'

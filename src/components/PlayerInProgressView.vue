@@ -61,9 +61,8 @@ import AccusationButton from './game/AccusationButton.vue'
 import AccusationModal from './game/AccusationModal.vue'
 import {
   updateWitnessTalkingTo,
-  clearAllWitnessTalkingTo,
+  clearMyWitnessTalkingTo,
   getChatHistory,
-  recordCorrectAccusation as recordCorrectAccusationInDb,
   finishGame,
 } from '@/utils/game-state.js'
 import { sendChatMessage, evaluateAccusation } from '@/utils/ai.js'
@@ -142,10 +141,20 @@ watch(
   },
 )
 
+/**
+ * Opens the accusation modal.
+ */
 function handleOpenAccusation() {
   isAccusationModalOpen.value = true
 }
 
+/**
+ * Handles the submission and evaluation of an accusation.
+ * @param {{culprit: string, motive: string}} accusationData - The accusation details.
+ * @param {string} accusationData.culprit - The accused witness ID.
+ * @param {string} accusationData.motive - The motive text.
+ * @returns {Promise<void>}
+ */
 async function handleAccusation({ culprit, motive }) {
   isAccusationLoading.value = true
   try {
@@ -159,7 +168,9 @@ async function handleAccusation({ culprit, motive }) {
 
     if (isCorrect) {
       console.log('Accusation is CORRECT!')
-      await recordCorrectAccusation()
+      if (props.game.settings?.mode !== 'race') {
+        await finishGame(props.gameId)
+      }
     } else {
       console.log('Accusation is INCORRECT. Starting cooldown.')
       snackbarText.value = 'Incorrect accusation! 2-minute penalty.'
@@ -189,38 +200,24 @@ async function handleAccusation({ culprit, motive }) {
   }
 }
 
-async function recordCorrectAccusation() {
-  if (!props.gameId || !props.currentUser) {
-    console.error('Game ID or current user is not available to record correct accusation.')
-    return
-  }
-
-  const currentUserId = props.currentUser.uid
-  const teamId = Object.keys(props.game.teams).find(
-    (key) => props.game.teams[key].uid === currentUserId,
-  )
-
-  if (teamId) {
-    if (props.game.settings.mode === 'race') {
-      await recordCorrectAccusationInDb(props.gameId, teamId)
-    } else {
-      await finishGame(props.gameId)
-    }
-  } else {
-    console.error('Could not find team ID for current user:', currentUserId)
-  }
-}
-
 onMounted(async () => {
-  if (props.gameId) {
-    await clearAllWitnessTalkingTo(props.gameId)
+  if (props.gameId && props.currentUser?.uid) {
+    await clearMyWitnessTalkingTo(props.gameId, props.currentUser.uid)
   }
 })
 
+/**
+ * Handles game timer expiration.
+ */
 function handleTimerUp() {
   timerUp.value = true
 }
 
+/**
+ * Opens chat dialogue with the specified witness.
+ * @param {string} witnessId - The ID of the witness.
+ * @returns {Promise<void>}
+ */
 async function handleOpenChat(witnessId) {
   activeWitness.value = props.game.witnesses.find((w) => w.id === witnessId)
   if (activeWitness.value) {
@@ -251,6 +248,11 @@ async function handleOpenChat(witnessId) {
   isChatOpen.value = true
 }
 
+/**
+ * Sends a message question to the active witness and awaits response.
+ * @param {string} messageText - The question message text.
+ * @returns {Promise<void>}
+ */
 async function handleSendMessage(messageText) {
   currentChatHistory.value.push({ sender: 'player', text: messageText })
   currentChatHistory.value.push({ sender: 'ai', text: 'Thinking...' })
@@ -281,6 +283,11 @@ async function handleSendMessage(messageText) {
   )
 }
 
+/**
+ * Updates which witness the current team is talking to.
+ * @param {string} witnessId - The ID of the witness.
+ * @returns {Promise<void>}
+ */
 async function handleUpdateTalkingTo(witnessId) {
   if (!props.game || !props.currentUser) {
     console.error('Game or current user is not available to update talkingTo.')

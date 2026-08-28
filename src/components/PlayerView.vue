@@ -48,7 +48,7 @@ import { getOrdinalWord } from '@/utils/formatters'
 import PlayerFinishedView from './PlayerFinishedView.vue'
 /**
  * Props for the PlayerView component.
- * @import {Game} from '@/types.js'
+ * @import {Game, CaseFile} from '@/types.js'
  * @import {PropType} from 'vue'
  * @property {Game} game - The reactive game object from Firebase.
  * @property {string} teamName - The current player's team name.
@@ -86,8 +86,8 @@ const props = defineProps({
 
 /**
  * Emits for the PlayerView component.
- * @event join-lobby - Emits the chosen team name when the player clicks the join button.
- * @type {(eventName: 'join-lobby', teamName: string) => void}
+ * @event join-lobby - Emits the chosen team data when the player clicks the join button.
+ * @type {(eventName: 'join-lobby', teamData: {name: string, color?: string, emoji?: string} | string) => void}
  */
 const emit = defineEmits(['join-lobby'])
 
@@ -109,7 +109,11 @@ const playerTeamResult = computed(() => {
   return props.game.results[playerTeamId.value]
 })
 
-function handleJoinLobby(teamName) {
-  emit('join-lobby', teamName)
+/**
+ * Handles the join-lobby emit from PlayerLobbyView and re-emits to GameView.
+ * @param {{name: string, color?: string, emoji?: string} | string} teamData - The team data.
+ */
+function handleJoinLobby(teamData) {
+  emit('join-lobby', teamData)
 }
 </script>

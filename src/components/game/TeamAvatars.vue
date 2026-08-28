@@ -33,7 +33,7 @@ const props = defineProps({
 /**
  * Generates dynamic styles for a team's avatar based on its state.
  * @param {Team} team - The team object.
- * @returns {Object} - CSS style object.
+ * @returns {object} - CSS style object.
  */
 const getTeamAvatarStyle = (team) => {
   if (team.talkingTo) {

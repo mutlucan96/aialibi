@@ -17,7 +17,7 @@ import {
  * Generates the story based on the settings via Realtime Database trigger to Cloud Functions (Firebase AI Logic).
  * @param {string} gameId - The ID of the game.
  * @param {GameSettings} newSettings - The game settings from the form.
- * @returns {Promise<{caseFile: Story, witnesses: Witness[]}>}
+ * @returns {Promise<{caseFile: Story, witnesses: Witness[]}>} Resolves with the case file and witnesses.
  */
 export async function generateStory(gameId, newSettings) {
   const reqRef = dbRef(db, `games/${gameId}/storyRequest`)

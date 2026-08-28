@@ -66,7 +66,7 @@ import router from '@/router/index.js'
 /**
  * @import {Game, CaseFile, GameSettings, Witness} from '@/types.js'
  * @import {Ref} from 'vue'
- * */
+ */
 
 // Props
 const props = defineProps({
@@ -173,6 +173,11 @@ function fetchGameData() {
   })
 }
 
+/**
+ * Generates the mystery story based on the provided settings.
+ * @param {GameSettings} newSettings - The game settings.
+ * @returns {Promise<void>}
+ */
 async function handleGenerateStory(newSettings) {
   isGeneratingStory.value = true
   caseFile.value = null
@@ -205,6 +210,9 @@ async function handleGenerateStory(newSettings) {
   }
 }
 
+/**
+ *
+ */
 async function handleGenerateImages() {
   if (!witnesses.value || witnesses.value.length === 0) return
   isGeneratingImages.value = true
@@ -218,10 +226,16 @@ async function handleGenerateImages() {
   }
 }
 
+/**
+ *
+ */
 async function handleStartGame() {
   await startGame(props.gameId, caseFile.value, witnesses.value, gameSettings, currentUser.value)
 }
 
+/**
+ *
+ */
 async function handleFinishGame() {
   await finishGame(props.gameId)
 }
@@ -235,15 +249,28 @@ async function handleDeleteGame() {
   await router.push('/')
 }
 
+/**
+ * Opens the presentation window for the current game.
+ */
 function handleOpenPresenterWindow() {
   openPresenterWindow(props.gameId)
 }
 
-async function handleJoinLobby(newTeamName) {
-  await joinLobby(props.gameId, newTeamName, currentUser.value)
+/**
+ * Handles a team joining the lobby with full team details.
+ * @param {{name: string, color?: string, emoji?: string} | string} teamData - The team data.
+ * @returns {Promise<void>}
+ */
+async function handleJoinLobby(teamData) {
+  await joinLobby(props.gameId, teamData, currentUser.value)
   isJoined.value = true
 }
 
+/**
+ * Removes a team from the game session.
+ * @param {string} teamId - The UID of the team to remove.
+ * @returns {Promise<void>}
+ */
 async function handleRemoveTeam(teamId) {
   await removeTeam(props.gameId, teamId)
 }

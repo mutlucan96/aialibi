@@ -60,7 +60,7 @@ const props = defineProps({
   },
 })
 
-/** @type {Ref<Object.<string, ChatHistoryItem[]>>} */
+/** @type {Ref<{[key: string]: ChatHistoryItem[]}>} */
 const witnessChatHistories = ref({})
 const unsubscribeFns = ref([])
 

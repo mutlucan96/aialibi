@@ -1,6 +1,5 @@
 /**
  * Converts a number into its corresponding English ordinal word (e.g., 1 -> "1st", 2 -> "2nd").
- *
  * @param {number} placement - The number to convert to an ordinal word.
  * @returns {string} The English ordinal word.
  */

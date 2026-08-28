@@ -60,8 +60,7 @@
  *
  * Displays the game state for the presenter, including a lobby screen with game code, QR code,
  * and a live list of joined teams. Transitions to in-progress and finished screens.
- *
- * @prop {string} gameId - The ID of the game to display.
+ * @property {string} gameId - The ID of the game to display.
  */
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { getDatabase, ref as dbRef, onValue } from 'firebase/database'

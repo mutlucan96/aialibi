@@ -1,5 +1,5 @@
 /**
- * @typedef {Object} GameSettings
+ * @typedef {object} GameSettings
  * @property {('classic'|'race')} mode - The selected game mode.
  * @property {('A2'|'B1'|'B2'|'C1'|'C2')} languageLevel - The target language proficiency level.
  * @property {number|null} targetAge - The target age for the players.
@@ -9,7 +9,7 @@
  */
 
 /**
- * @typedef {Object} Witness
+ * @typedef {object} Witness
  * @property {string} id - The unique ID of the witness.
  * @property {string} name - The name of the witness.
  * @property {string} [description] - A short 1-2 sentence public introduction or role displayed on the witness card.
@@ -21,55 +21,54 @@
  */
 
 /**
- * @typedef {Object} Story
+ * @typedef {object} Story
  * @property {string} crimeDescription - The main description of the crime.
  * @property {Witness[]} witnesses - An array of witness objects.
  */
 
 /**
- * @typedef {Object} Team
+ * @typedef {object} Team
  * @property {string} name - The name of the team.
  * @property {string} uid - The unique ID of the user who created the team.
  * @property {number} score - The team's current score.
- * @property {string} emoji
- * @property {string} color
- * @property {string} talkingTo - The ID of the witness the team is currently talking to.
+ * @property {string} emoji - The emoji avatar representing the team.
+ * @property {string} color - The theme color code for the team.
+ * @property {string} [talkingTo] - The ID of the witness the team is currently talking to.
  */
 
 /**
- * @typedef {Object} Game
+ * @typedef {object} Game
  * @property {string} creatorId - The UID of the user who created the game.
  * @property {('lobby'|'in-progress'|'finished')} status - The current status of the game.
  * @property {number} createdAt - The timestamp when the game was created.
- * @property {string} joinCode - The 4-digit code for players to join a race mode game.
- * @property {Object.<string, Team>} teams - A dictionary of teams that have joined the game.
+ * @property {string} [joinCode] - The 4-digit code for players to join a race mode game.
+ * @property {{[key: string]: Team}} teams - A dictionary of teams that have joined the game.
  * @property {CaseFile} [caseFile] - The generated case file for the game.
  * @property {Story} [story] - The generated story for the game.
  * @property {GameSettings} [settings] - The settings object for the game.
- * @property {Witness[]} witnesses
- * @property {number} [startTime]
- * @property {number} [duration]
- * @property {Team[]} teams
- * @property {Results} results
+ * @property {Witness[]} [witnesses] - The array of witness objects.
+ * @property {number} [startTime] - The timestamp when the game started.
+ * @property {number} [duration] - The duration of the game in minutes.
+ * @property {Results} [results] - The results dictionary when teams solve the case.
  */
 
 /**
- * @typedef {Object} ChatMessage
+ * @typedef {object} ChatMessage
  * @property {('player'|'ai')} sender - The sender of the message.
  * @property {string} text - The content of the message.
  */
 
 /**
- * @typedef {Object} ChatHistoryItem
+ * @typedef {object} ChatHistoryItem
  * @property {string} id - The unique ID of the chat message in Firebase.
  * @property {string} teamId - The ID of the team that sent the question.
  * @property {string} question - The question asked by the team.
  * @property {string} [answer] - The AI's answer to the question.
- * @property {Object} timestamp - Server timestamp object.
+ * @property {object} timestamp - Server timestamp object.
  */
 
 /**
- * @typedef {Object} Result
+ * @typedef {object} Result
  * @property {number} placement - The placement of the team.
  * @property {string} teamName - The name of the team.
  * @property {string} color - The color of the team.
@@ -78,12 +77,12 @@
  */
 
 /**
- * @typedef {Object} Results
- * @property {Object.<string, Result>} results - A dictionary of results.
+ * @typedef {object} Results
+ * @property {{[key: string]: Result}} results - A dictionary of results.
  */
 
 /**
- * @typedef {Object} CaseFile
+ * @typedef {object} CaseFile
  * @property {string} crime - The main description of the crime.
  * @property {string} culprit - The culprit of the crime.
  * @property {string} motive - The motive of the crime.
@@ -91,18 +90,18 @@
  */
 
 /**
- * @typedef {Object} AccusationRequest
+ * @typedef {object} AccusationRequest
  * @property {string} teamId - The UID of the team making the accusation.
  * @property {string} culprit - The ID of the accused witness.
  * @property {string} motive - The proposed motive.
  * @property {('pending'|'evaluated'|'error')} status - The status of the evaluation.
  * @property {boolean} [isCorrect] - Whether the accusation was correct.
- * @property {Object} timestamp - Server timestamp object.
+ * @property {object} timestamp - Server timestamp object.
  */
 
 /**
- * @typedef {Object} BlockedUser
- * @property {Object} bannedAt - Server timestamp when user was banned.
+ * @typedef {object} BlockedUser
+ * @property {object} bannedAt - Server timestamp when user was banned.
  * @property {string} reason - The reason for the ban.
  */
 

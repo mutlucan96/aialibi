@@ -12,7 +12,7 @@
               :rules="[(v) => !!v || 'Team name is required']"
             ></v-text-field>
 
-            <v-row class="mb-4">
+            <v-row class="mb-2">
               <v-col
                 v-for="color in colorSelection"
                 :key="color"
@@ -31,6 +31,10 @@
               </v-col>
             </v-row>
 
+            <div v-if="isColorTaken" class="text-caption text-error mb-2">
+              That color was just taken by another team. Please pick another color.
+            </div>
+
             <v-text-field
               :model-value="selectedEmoji"
               @update:modelValue="selectEmoji"
@@ -43,7 +47,11 @@
               type="submit"
               color="primary"
               :disabled="
-                !newTeamName || !selectedColor || !selectedEmoji || emojiErrorMessages.length > 0
+                !newTeamName ||
+                !selectedColor ||
+                isColorTaken ||
+                !selectedEmoji ||
+                emojiErrorMessages.length > 0
               "
             >
               Join Lobby
@@ -60,9 +68,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { db } from '@/firebase'
-import { ref as dbRef, update } from 'firebase/database'
+import { ref, computed } from 'vue'
 
 /**
  * A regular expression that matches a single, complete Unicode grapheme (including complex emojis).
@@ -72,8 +78,7 @@ const singleEmojiRegex = /^.$/u
 /**
  * @import {PropType, Ref} from 'vue'
  * @import {Game} from '@/types.js'
- * @typedef {import('vue').Ref<string[]>} RefStringArray
- * */
+ */
 const props = defineProps({
   gameId: {
     type: String,
@@ -107,8 +112,6 @@ const newTeamName = ref('')
 const selectedColor = ref('')
 /** @type {Ref<string>} */
 const selectedEmoji = ref('')
-/** @type {RefStringArray} */
-const emojiErrorMessages = ref(/** @type {string[]} */ ([]))
 
 const colorSelection = [
   '#E53935',
@@ -134,74 +137,79 @@ const takenChoices = computed(() => {
   const takenEmojis = new Set()
   if (props.game && props.game.teams) {
     Object.values(props.game.teams).forEach((team) => {
-      // Check for both finalized and temporarily selected choices
-      takenColors.add(team.color || team.selectedColor)
-      takenEmojis.add(team.emoji || team.selectedEmoji)
+      if (team.color) takenColors.add(team.color)
+      if (team.emoji) takenEmojis.add(team.emoji)
     })
   }
   return { takenColors, takenEmojis }
 })
 
-watch(selectedEmoji, (newEmoji) => {
-  emojiErrorMessages.value = []
-
-  if (!newEmoji) {
-    return // Do nothing if input is empty
-  }
-
-  if (!singleEmojiRegex.test(newEmoji)) {
-    emojiErrorMessages.value = ['Please enter only one emoji.']
-    return
-  }
-
-  // Check if the emoji is taken by any other team
-  let isTakenByOtherTeam = false
+const isColorTaken = computed(() => {
+  if (!selectedColor.value) return false
   if (props.game && props.game.teams && props.currentUser) {
     for (const teamId in props.game.teams) {
       const team = props.game.teams[teamId]
-      // If it's not the current user's team AND the emoji is taken by this team
-      if (
-        teamId !== props.currentUser.uid &&
-        (team.emoji === newEmoji || team.selectedEmoji === newEmoji)
-      ) {
-        isTakenByOtherTeam = true
-        break
+      if (teamId !== props.currentUser.uid && team.color === selectedColor.value) {
+        return true
+      }
+    }
+  }
+  return false
+})
+
+const emojiErrorMessages = computed(() => {
+  if (!selectedEmoji.value) {
+    return []
+  }
+
+  if (!singleEmojiRegex.test(selectedEmoji.value)) {
+    return ['Please enter only one emoji.']
+  }
+
+  if (props.game && props.game.teams && props.currentUser) {
+    for (const teamId in props.game.teams) {
+      const team = props.game.teams[teamId]
+      if (teamId !== props.currentUser.uid && team.emoji === selectedEmoji.value) {
+        return ['That emoji has already been taken!']
       }
     }
   }
 
-  if (isTakenByOtherTeam) {
-    emojiErrorMessages.value = ['That emoji has already been taken!']
-  }
+  return []
 })
 
-async function selectColor(color) {
-  if (!props.currentUser || !props.gameId) return
+/**
+ * Sets the selected color locally for the team.
+ * @param {string} color - The hex color code.
+ */
+function selectColor(color) {
   selectedColor.value = color
-  try {
-    await update(dbRef(db, `games/${props.gameId}/teams/${props.currentUser.uid}`), {
-      color: color,
-    })
-  } catch (e) {
-    console.error(e)
-  }
 }
 
-async function selectEmoji(emoji) {
-  if (!props.currentUser || !props.gameId) return
+/**
+ * Sets the selected emoji locally for the team.
+ * @param {string} emoji - The chosen emoji string.
+ */
+function selectEmoji(emoji) {
   selectedEmoji.value = emoji
-  try {
-    await update(dbRef(db, `games/${props.gameId}/teams/${props.currentUser.uid}`), {
-      emoji: emoji,
-    })
-  } catch (e) {
-    console.error(e)
-  }
 }
 
+/**
+ * Handles the lobby join submission by emitting the chosen team details.
+ */
 async function handleJoinLobby() {
-  if (newTeamName.value.trim() && emojiErrorMessages.value.length === 0) {
-    emit('join-lobby', newTeamName.value.trim())
+  if (
+    newTeamName.value.trim() &&
+    selectedColor.value &&
+    !isColorTaken.value &&
+    selectedEmoji.value &&
+    emojiErrorMessages.value.length === 0
+  ) {
+    emit('join-lobby', {
+      name: newTeamName.value.trim(),
+      color: selectedColor.value,
+      emoji: selectedEmoji.value,
+    })
   }
 }
 </script>

@@ -168,6 +168,9 @@ watch(
   },
 )
 
+/**
+ *
+ */
 function onGenerateStory() {
   emit('generate-story', localGameSettings)
 }

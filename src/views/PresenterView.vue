@@ -36,19 +36,26 @@
 
     <!-- Winner Announcement Overlay -->
     <v-overlay
-      v-if="latestWinner"
-      :model-value="latestWinner"
-      class="align-center justify-center"
-      :style="{ backgroundColor: latestWinner.color }"
+      v-model="isWinnerOverlayOpen"
+      class="align-center justify-center winner-announcement-overlay"
+      :scrim="latestWinner?.color || '#1976d2'"
+      :opacity="0.95"
       persistent
-      absolute
+      z-index="9999"
     >
-      <div class="text-center" style="color: #fff; text-shadow: 0 0 2px BLACK">
-        <h1 class="text-h1 font-weight-bold mb-4">
+      <div v-if="latestWinner" class="text-center winner-content px-4">
+        <div class="text-h4 text-uppercase font-weight-black tracking-wide text-white mb-2 case-solved-badge">
+          🎉 Case Solved! 🎉
+        </div>
+        <h1 class="text-h1 font-weight-black text-white mb-2 placement-text">
           {{ getOrdinalWord(latestWinner.placement) }}
         </h1>
-        <p class="text-h1 mt-4">{{ latestWinner.emoji }}</p>
-        <p class="text-h3 mt-2">{{ latestWinner.teamName }}</p>
+        <div class="winner-emoji mb-2">
+          {{ latestWinner.emoji }}
+        </div>
+        <p class="text-h2 font-weight-bold text-white team-name-text">
+          {{ latestWinner.teamName }}
+        </p>
       </div>
     </v-overlay>
   </v-container>
@@ -63,7 +70,7 @@
  * @property {string} gameId - The ID of the game to display.
  */
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { getDatabase, ref as dbRef, onValue } from 'firebase/database'
+import { getDatabase, ref as dbRef, onValue, off } from 'firebase/database'
 import PresenterLobby from '../components/PresenterLobby.vue'
 import PresenterInProgress from '../components/PresenterInProgress.vue'
 import PresenterFinished from '../components/PresenterFinished.vue'
@@ -87,17 +94,34 @@ const snackbarText = ref('')
 const snackbarTimeout = ref(10000)
 
 const latestWinner = ref(null)
+const isWinnerOverlayOpen = ref(false)
 let winnerTimeout = null
+const seenResultIds = new Set()
+let isInitialResultsLoad = true
 
 const showSnackbar = (message) => {
   snackbarText.value = message
   snackbar.value = true
 }
 
+const triggerWinnerCelebration = (winner) => {
+  latestWinner.value = winner
+  isWinnerOverlayOpen.value = true
+
+  if (winnerTimeout) {
+    clearTimeout(winnerTimeout)
+  }
+  winnerTimeout = setTimeout(() => {
+    isWinnerOverlayOpen.value = false
+    latestWinner.value = null
+  }, 6000)
+}
+
 onMounted(() => {
   gameRef = dbRef(db, `games/${props.gameId}`)
   onValue(gameRef, (snapshot) => {
-    game.value = snapshot.val()
+    const data = snapshot.val()
+    game.value = data
     loading.value = false
   })
 
@@ -106,7 +130,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (gameRef) {
-    onValue(gameRef, () => {})
+    off(gameRef)
   }
   if (winnerTimeout) {
     clearTimeout(winnerTimeout)
@@ -115,23 +139,24 @@ onUnmounted(() => {
 
 watch(
   () => game.value?.results,
-  (newResults, oldResults) => {
-    if (
-      newResults &&
-      (!oldResults || Object.keys(newResults).length > Object.keys(oldResults).length)
-    ) {
-      const newResultKeys = Object.keys(newResults).filter((key) => !oldResults || !oldResults[key])
-      if (newResultKeys.length > 0) {
-        const newWinnerId = newResultKeys[0]
-        latestWinner.value = newResults[newWinnerId]
+  (results) => {
+    if (!results) return
 
-        if (winnerTimeout) {
-          clearTimeout(winnerTimeout)
-        }
-        winnerTimeout = setTimeout(() => {
-          latestWinner.value = null
-        }, 5000)
-      }
+    const resultEntries = Object.entries(results)
+
+    if (isInitialResultsLoad) {
+      // Register existing results on mount so stale results don't re-trigger
+      resultEntries.forEach(([id]) => seenResultIds.add(id))
+      isInitialResultsLoad = false
+      return
+    }
+
+    // Detect any newly added results in real time
+    const newResults = resultEntries.filter(([id]) => !seenResultIds.has(id))
+    if (newResults.length > 0) {
+      const [newId, newWinner] = newResults[0]
+      seenResultIds.add(newId)
+      triggerWinnerCelebration(newWinner)
     }
   },
   { deep: true },
@@ -141,5 +166,49 @@ watch(
 <style scoped>
 a {
   text-decoration: none;
+}
+
+.winner-announcement-overlay :deep(.v-overlay__content) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.winner-content {
+  color: #fff;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.winner-emoji {
+  font-size: 6rem;
+  line-height: 1;
+  animation: bounce 1s infinite alternate;
+}
+
+.case-solved-badge {
+  letter-spacing: 2px;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-15px);
+  }
 }
 </style>

@@ -12,13 +12,6 @@ import { db, storage, ai, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.j
  * @returns {Promise<string|null>} Base64-encoded image data, or null on failure.
  */
 async function generateWitnessSpritesheet(witnesses, context = {}) {
-  const safetySettings = [
-    { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-    { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
-  ]
-
   const w0 = witnesses[0] || { name: 'Character 1', outfit: 'colorful clothing' }
   const w1 = witnesses[1] || { name: 'Character 2', outfit: 'colorful clothing' }
   const w2 = witnesses[2] || { name: 'Character 3', outfit: 'colorful clothing' }
@@ -50,9 +43,9 @@ Quadrants:
 
 All 4 characters must share a cohesive 2D cartoon art style fitting the mystery setting. Vibrant colors.`
 
-  // Generate 2x2 spritesheet using gemini-3.1-flash-lite-image
+  // Generate 2x2 spritesheet
   try {
-    console.log('Generating 2x2 witness spritesheet using gemini-3.1-flash-lite-image...')
+    console.log('Generating 2x2 witness')
     const response = await ai.models.generateContent({
       model: 'gemini-3.1-flash-lite-image',
       contents: prompt,
@@ -61,7 +54,6 @@ All 4 characters must share a cohesive 2D cartoon art style fitting the mystery 
         imageConfig: {
           aspectRatio: '1:1',
         },
-        safetySettings,
       },
     })
 

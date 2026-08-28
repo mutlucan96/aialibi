@@ -85,7 +85,7 @@ export const onStoryRequested = onValueWritten(
                     description: {
                       type: 'STRING',
                       description:
-                        'A short 1-2 sentence introduction or background of the witness to be displayed on their character card.',
+                        'A short 1-2 introduction or background of the witness to be displayed on their character card. Do not include the name of the character. No full sentences. Short, concise and glancable descriptions.',
                     },
                     personality: {
                       type: 'STRING',

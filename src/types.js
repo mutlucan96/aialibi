@@ -34,6 +34,8 @@
  * @property {string} emoji - The emoji avatar representing the team.
  * @property {string} color - The theme color code for the team.
  * @property {string} [talkingTo] - The ID of the witness the team is currently talking to.
+ * @property {boolean} [correctAccusation] - Whether the team has made a correct accusation.
+ * @property {number} [accusationCooldownUntil] - Timestamp until which accusation is disabled.
  */
 
 /**
@@ -106,5 +108,3 @@
  */
 
 export {}
-
-

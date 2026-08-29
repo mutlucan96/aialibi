@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import TimerView from './game/TimerView.vue'
 import CrimeDescription from './game/CrimeDescription.vue'
@@ -110,10 +110,71 @@ const snackbarColor = ref('error')
 
 const timerUp = ref(false)
 
+const currentTeam = computed(() => {
+  if (!props.game?.teams || !props.currentUser?.uid) return null
+  if (props.game.teams[props.currentUser.uid]) {
+    return props.game.teams[props.currentUser.uid]
+  }
+  return Object.values(props.game.teams).find((t) => t.uid === props.currentUser.uid) || null
+})
+
+const accusationCooldownUntil = computed(() => {
+  return currentTeam.value?.accusationCooldownUntil || 0
+})
+
 const isAccusationDisabled = computed(() => accusationCooldown.value > 0)
 
 const formattedAccusationCooldown = computed(() => {
   return formatTime(accusationCooldown.value)
+})
+
+/**
+ *
+ */
+function updateCooldown() {
+  const targetTime = accusationCooldownUntil.value
+  if (!targetTime) {
+    accusationCooldown.value = 0
+    if (cooldownInterval) {
+      clearInterval(cooldownInterval)
+      cooldownInterval = null
+    }
+    return
+  }
+
+  const remaining = Math.max(0, Math.ceil((targetTime - Date.now()) / 1000))
+  accusationCooldown.value = remaining
+
+  if (remaining > 0) {
+    if (!cooldownInterval) {
+      cooldownInterval = setInterval(() => {
+        const rem = Math.max(0, Math.ceil((accusationCooldownUntil.value - Date.now()) / 1000))
+        accusationCooldown.value = rem
+        if (rem <= 0) {
+          clearInterval(cooldownInterval)
+          cooldownInterval = null
+        }
+      }, 1000)
+    }
+  } else if (cooldownInterval) {
+    clearInterval(cooldownInterval)
+    cooldownInterval = null
+  }
+}
+
+watch(
+  accusationCooldownUntil,
+  () => {
+    updateCooldown()
+  },
+  { immediate: true },
+)
+
+onUnmounted(() => {
+  if (cooldownInterval) {
+    clearInterval(cooldownInterval)
+    cooldownInterval = null
+  }
 })
 
 // Watch for changes in isChatOpen to manage browser history and update witness talkingTo state
@@ -153,7 +214,7 @@ function handleOpenAccusation() {
  * @param {{culprit: string, motive: string}} accusationData - The accusation details.
  * @param {string} accusationData.culprit - The accused witness ID.
  * @param {string} accusationData.motive - The motive text.
- * @returns {Promise<void>}
+ * @returns {Promise<void>}\n
  */
 async function handleAccusation({ culprit, motive }) {
   isAccusationLoading.value = true
@@ -172,26 +233,14 @@ async function handleAccusation({ culprit, motive }) {
         await finishGame(props.gameId)
       }
     } else {
-      console.log('Accusation is INCORRECT. Starting cooldown.')
+      console.log('Accusation is INCORRECT.')
       snackbarText.value = 'Incorrect accusation! 2-minute penalty.'
       snackbarColor.value = 'error'
       snackbar.value = true
-      accusationCooldown.value = 120
-      if (cooldownInterval) {
-        clearInterval(cooldownInterval)
-      }
-      cooldownInterval = setInterval(() => {
-        if (accusationCooldown.value > 0) {
-          accusationCooldown.value--
-        } else {
-          clearInterval(cooldownInterval)
-          cooldownInterval = null
-        }
-      }, 1000)
     }
   } catch (error) {
     console.error('Error during accusation:', error)
-    snackbarText.value = 'An error occurred during accusation.'
+    snackbarText.value = error.message || 'An error occurred during accusation.'
     snackbarColor.value = 'error'
     snackbar.value = true
   } finally {

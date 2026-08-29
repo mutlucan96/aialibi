@@ -187,10 +187,10 @@ export async function evaluateAccusation(gameId, culpritId, motive, teamId) {
       timestamp: serverTimestamp(),
     })
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         off(newAccusationRef)
-        resolve(false)
+        reject(new Error('Accusation evaluation timed out.'))
       }, 60000)
 
       onValue(newAccusationRef, (snapshot) => {
@@ -204,12 +204,12 @@ export async function evaluateAccusation(gameId, culpritId, motive, teamId) {
         } else if (accusation.status === 'error') {
           clearTimeout(timeout)
           off(newAccusationRef)
-          resolve(false)
+          reject(new Error(accusation.error || 'Failed to evaluate accusation.'))
         }
       })
     })
   } catch (error) {
     console.error('Error evaluating accusation:', error)
-    return false
+    throw error
   }
 }

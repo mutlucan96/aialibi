@@ -37,6 +37,18 @@ export const onAccusationCreated = onValueCreated(
         return
       }
 
+      // Check if team is currently in penalty cooldown
+      const team = game.teams ? game.teams[teamId] : null
+      const now = Date.now()
+      if (team && team.accusationCooldownUntil && team.accusationCooldownUntil > now) {
+        await accusationRef.update({
+          status: 'error',
+          isCorrect: false,
+          error: 'Accusation cooldown active. Please wait.',
+        })
+        return
+      }
+
       const actualCulprit = game.story.culprit
       const actualMotive = game.story.motive
       const witnessesArray = Array.isArray(game.witnesses)
@@ -45,6 +57,10 @@ export const onAccusationCreated = onValueCreated(
 
       const accusedWitness = witnessesArray.find((w) => w.id === accusedCulpritId)
       if (!accusedWitness) {
+        if (teamId) {
+          const cooldownUntil = Date.now() + 120 * 1000
+          await db.ref(`games/${gameId}/teams/${teamId}/accusationCooldownUntil`).set(cooldownUntil)
+        }
         await accusationRef.update({
           status: 'evaluated',
           isCorrect: false,
@@ -81,6 +97,12 @@ export const onAccusationCreated = onValueCreated(
 
       const isOverallCorrect = isCulpritCorrect && isMotiveCorrect
 
+      // If incorrect, set penalty cooldown of 2 minutes (120 seconds) on the team
+      if (!isOverallCorrect && teamId) {
+        const cooldownUntil = Date.now() + 120 * 1000
+        await db.ref(`games/${gameId}/teams/${teamId}/accusationCooldownUntil`).set(cooldownUntil)
+      }
+
       // 4. Update Accusation Status
       await accusationRef.update({
         status: 'evaluated',
@@ -89,7 +111,6 @@ export const onAccusationCreated = onValueCreated(
 
       // 5. If correct, record placement in RTDB
       if (isOverallCorrect) {
-        const team = game.teams ? game.teams[teamId] : null
         if (team) {
           const resultsSnap = await db.ref(`games/${gameId}/results`).once('value')
           const existingResults = resultsSnap.val() || {}

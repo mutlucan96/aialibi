@@ -36,6 +36,7 @@
     <AccusationModal
       v-model="isAccusationModalOpen"
       :game="game"
+      :is-disabled="isAccusationDisabled"
       @submit-accusation="handleAccusation"
       @close="isAccusationModalOpen = false"
       :is-loading="isAccusationLoading"
@@ -64,6 +65,7 @@ import {
   clearMyWitnessTalkingTo,
   getChatHistory,
   finishGame,
+  setAccusationCooldown,
 } from '@/utils/game-state.js'
 import { sendChatMessage, evaluateAccusation } from '@/utils/ai.js'
 import { formatTime } from '@/utils/ui.js'
@@ -97,7 +99,7 @@ const isChatOpen = ref(false)
 const activeWitness = ref(null)
 const currentChatHistory = ref([])
 const chatModalRef = ref(null)
-const isAiResponding = ref(false) // New ref to track AI response status
+const isAiResponding = ref(false)
 
 const isAccusationModalOpen = ref(false)
 const accusationCooldown = ref(0)
@@ -110,12 +112,34 @@ const snackbarColor = ref('error')
 
 const timerUp = ref(false)
 
-const currentTeam = computed(() => {
-  if (!props.game?.teams || !props.currentUser?.uid) return null
-  if (props.game.teams[props.currentUser.uid]) {
-    return props.game.teams[props.currentUser.uid]
+/**
+ *
+ * @param text
+ * @param color
+ */
+function showNotification(text, color = 'error') {
+  snackbarText.value = text
+  snackbarColor.value = color
+  snackbar.value = true
+}
+
+const currentTeamId = computed(() => {
+  if (!props.currentUser?.uid) return null
+  if (props.game?.teams && props.game.teams[props.currentUser.uid]) {
+    return props.currentUser.uid
   }
-  return Object.values(props.game.teams).find((t) => t.uid === props.currentUser.uid) || null
+  if (props.game?.teams) {
+    const entry = Object.entries(props.game.teams).find(
+      ([, team]) => team && team.uid === props.currentUser.uid,
+    )
+    if (entry) return entry[0]
+  }
+  return props.currentUser.uid
+})
+
+const currentTeam = computed(() => {
+  if (!props.game?.teams || !currentTeamId.value) return null
+  return props.game.teams[currentTeamId.value] || null
 })
 
 const accusationCooldownUntil = computed(() => {
@@ -128,53 +152,108 @@ const formattedAccusationCooldown = computed(() => {
   return formatTime(accusationCooldown.value)
 })
 
+const storageKey = computed(() => {
+  return props.gameId && props.currentUser?.uid
+    ? `accusation_cooldown_${props.gameId}_${props.currentUser.uid}`
+    : null
+})
+
 /**
  *
  */
-function updateCooldown() {
-  const targetTime = accusationCooldownUntil.value
-  if (!targetTime) {
-    accusationCooldown.value = 0
-    if (cooldownInterval) {
-      clearInterval(cooldownInterval)
-      cooldownInterval = null
-    }
-    return
+function getStoredCooldown() {
+  if (!storageKey.value) return 0
+  try {
+    const val = localStorage.getItem(storageKey.value)
+    return val ? Number(val) : 0
+  } catch {
+    return 0
   }
+}
 
-  const remaining = Math.max(0, Math.ceil((targetTime - Date.now()) / 1000))
-  accusationCooldown.value = remaining
-
-  if (remaining > 0) {
-    if (!cooldownInterval) {
-      cooldownInterval = setInterval(() => {
-        const rem = Math.max(0, Math.ceil((accusationCooldownUntil.value - Date.now()) / 1000))
-        accusationCooldown.value = rem
-        if (rem <= 0) {
-          clearInterval(cooldownInterval)
-          cooldownInterval = null
-        }
-      }, 1000)
+/**
+ *
+ * @param timestamp
+ */
+function setStoredCooldown(timestamp) {
+  if (!storageKey.value) return
+  try {
+    if (timestamp && timestamp > Date.now()) {
+      localStorage.setItem(storageKey.value, String(timestamp))
+    } else {
+      localStorage.removeItem(storageKey.value)
     }
-  } else if (cooldownInterval) {
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ *
+ */
+function clearCooldownTimer() {
+  if (cooldownInterval) {
     clearInterval(cooldownInterval)
     cooldownInterval = null
   }
 }
 
+/**
+ *
+ * @param targetTimestamp
+ */
+function startCooldown(targetTimestamp) {
+  clearCooldownTimer()
+  setStoredCooldown(targetTimestamp)
+
+  const tick = () => {
+    const remaining = Math.max(0, Math.ceil((targetTimestamp - Date.now()) / 1000))
+    accusationCooldown.value = remaining
+    if (remaining <= 0) {
+      clearCooldownTimer()
+      setStoredCooldown(0)
+    }
+  }
+
+  tick()
+  if (accusationCooldown.value > 0) {
+    cooldownInterval = setInterval(tick, 1000)
+  }
+}
+
+/**
+ *
+ */
+function syncCooldown() {
+  const rtdbTime = Number(accusationCooldownUntil.value) || 0
+  const localStoredTime = getStoredCooldown()
+  const targetTime = Math.max(rtdbTime, localStoredTime)
+
+  if (targetTime > Date.now()) {
+    startCooldown(targetTime)
+  } else {
+    accusationCooldown.value = 0
+    clearCooldownTimer()
+    setStoredCooldown(0)
+  }
+}
+
 watch(
-  accusationCooldownUntil,
+  () => currentTeam.value?.accusationCooldownUntil,
   () => {
-    updateCooldown()
+    syncCooldown()
   },
-  { immediate: true },
 )
 
-onUnmounted(() => {
-  if (cooldownInterval) {
-    clearInterval(cooldownInterval)
-    cooldownInterval = null
+onMounted(async () => {
+  syncCooldown()
+  if (props.gameId && props.currentUser?.uid) {
+    await clearMyWitnessTalkingTo(props.gameId, props.currentUser.uid)
   }
+})
+
+onUnmounted(() => {
+  clearCooldownTimer()
 })
 
 // Watch for changes in isChatOpen to manage browser history and update witness talkingTo state
@@ -206,6 +285,13 @@ watch(
  * Opens the accusation modal.
  */
 function handleOpenAccusation() {
+  if (isAccusationDisabled.value) {
+    showNotification(
+      `Please wait ${formattedAccusationCooldown.value} before making another accusation.`,
+      'warning',
+    )
+    return
+  }
   isAccusationModalOpen.value = true
 }
 
@@ -214,9 +300,18 @@ function handleOpenAccusation() {
  * @param {{culprit: string, motive: string}} accusationData - The accusation details.
  * @param {string} accusationData.culprit - The accused witness ID.
  * @param {string} accusationData.motive - The motive text.
- * @returns {Promise<void>}\n
+ * @returns {Promise<void>}
  */
 async function handleAccusation({ culprit, motive }) {
+  if (isAccusationDisabled.value) {
+    showNotification(
+      `Accusation is on cooldown. Please wait ${formattedAccusationCooldown.value}.`,
+      'warning',
+    )
+    isAccusationModalOpen.value = false
+    return
+  }
+
   isAccusationLoading.value = true
   try {
     console.log('Accusation submitted:', { culprit, motive })
@@ -233,27 +328,29 @@ async function handleAccusation({ culprit, motive }) {
         await finishGame(props.gameId)
       }
     } else {
-      console.log('Accusation is INCORRECT.')
-      snackbarText.value = 'Incorrect accusation! 2-minute penalty.'
-      snackbarColor.value = 'error'
-      snackbar.value = true
+      console.log('Accusation is INCORRECT. Starting cooldown.')
+      showNotification('Incorrect accusation! 2-minute penalty.', 'error')
+
+      const cooldownUntil = Date.now() + 120 * 1000
+      startCooldown(cooldownUntil)
+
+      const teamId = currentTeamId.value
+      if (teamId && props.gameId) {
+        try {
+          await setAccusationCooldown(props.gameId, teamId, cooldownUntil)
+        } catch (e) {
+          console.error('Failed to update cooldown in database:', e)
+        }
+      }
     }
   } catch (error) {
     console.error('Error during accusation:', error)
-    snackbarText.value = error.message || 'An error occurred during accusation.'
-    snackbarColor.value = 'error'
-    snackbar.value = true
+    showNotification(error.message || 'An error occurred during accusation.', 'error')
   } finally {
     isAccusationLoading.value = false
     isAccusationModalOpen.value = false
   }
 }
-
-onMounted(async () => {
-  if (props.gameId && props.currentUser?.uid) {
-    await clearMyWitnessTalkingTo(props.gameId, props.currentUser.uid)
-  }
-})
 
 /**
  * Handles game timer expiration.
@@ -325,9 +422,7 @@ async function handleSendMessage(messageText) {
       updateWitnessTalkingTo(props.gameId, activeWitness.value.id, null)
     },
     (errorMessage) => {
-      snackbarText.value = errorMessage
-      snackbarColor.value = 'error'
-      snackbar.value = true
+      showNotification(errorMessage, 'error')
     },
   )
 }
@@ -343,17 +438,11 @@ async function handleUpdateTalkingTo(witnessId) {
     return
   }
 
-  const gameId = props.gameId
-  const currentUserId = props.currentUser.uid
-
-  const teamId = Object.keys(props.game.teams).find(
-    (key) => props.game.teams[key].uid === currentUserId,
-  )
-
+  const teamId = currentTeamId.value
   if (teamId) {
-    await updateWitnessTalkingTo(gameId, witnessId, teamId)
+    await updateWitnessTalkingTo(props.gameId, witnessId, teamId)
   } else {
-    console.error('Could not find team ID for current user:', currentUserId)
+    console.error('Could not find team ID for current user:', props.currentUser.uid)
   }
 }
 </script>

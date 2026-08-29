@@ -24,7 +24,7 @@ export async function startGame(gameId, caseFile, witnesses, gameSettings, curre
       uid: teamId,
       name: 'Neutral Detective',
       color: '#212121',
-      emoji: '🕵️‍',
+      emoji: '🕵️‍♂️',
       score: 0,
     })
   }
@@ -35,6 +35,21 @@ export async function startGame(gameId, caseFile, witnesses, gameSettings, curre
     witnesses: witnesses,
     startTime: serverTimestamp(),
     duration: gameSettings.timeLimit,
+  })
+}
+
+/**
+ * Sets the accusation cooldown timestamp for a team.
+ * @param {string} gameId - The ID of the game.
+ * @param {string} teamId - The UID of the team.
+ * @param {number} cooldownUntil - The timestamp until which accusation is blocked.
+ * @returns {Promise<void>}
+ */
+export async function setAccusationCooldown(gameId, teamId, cooldownUntil) {
+  if (!gameId || !teamId) return
+  const teamRef = dbRef(db, `games/${gameId}/teams/${teamId}`)
+  await update(teamRef, {
+    accusationCooldownUntil: cooldownUntil,
   })
 }
 
@@ -206,4 +221,3 @@ export async function clearAllWitnessTalkingTo(gameId) {
     }
   }
 }
-

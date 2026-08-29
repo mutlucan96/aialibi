@@ -46,7 +46,7 @@
           color="blue-darken-1"
           text
           @click="submitAccusation"
-          :disabled="!selectedCulprit || !motive || isLoading"
+          :disabled="!selectedCulprit || !motive || isLoading || isDisabled"
           :loading="isLoading"
           >Submit</v-btn
         >
@@ -74,6 +74,10 @@ const props = defineProps({
     default: false,
   },
   isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  isDisabled: {
     type: Boolean,
     default: false,
   },
@@ -121,4 +125,3 @@ const submitAccusation = () => {
 </script>
 
 <style scoped></style>
-

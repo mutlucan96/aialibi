@@ -50,10 +50,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  /** Optional custom zoom factor (default: 235% for zoomed-in borderless cropping) */
+  /** Optional custom zoom factor (default: 204% for ~2% subtle border trimming) */
   zoom: {
     type: Number,
-    default: 235,
+    default: 204,
   },
 })
 
@@ -101,12 +101,12 @@ watch(
   { immediate: true },
 )
 
-// CSS sprite positions for a zoomed 2x2 grid (crops out outer borders and center dividers)
+// CSS sprite positions with subtle ~2% inset to clip off thin divider lines
 const spritePositions = [
-  '8% 8%',     // 0: Top-Left (inset to hide top/left outer border & center divider)
-  '92% 8%',    // 1: Top-Right (inset to hide top/right outer border & center divider)
-  '8% 92%',    // 2: Bottom-Left (inset to hide bottom/left outer border & center divider)
-  '92% 92%',   // 3: Bottom-Right (inset to hide bottom/right outer border & center divider)
+  '1% 1%',     // 0: Top-Left
+  '99% 1%',    // 1: Top-Right
+  '1% 99%',    // 2: Bottom-Left
+  '99% 99%',   // 3: Bottom-Right
 ]
 
 const isSprite = computed(() => {

@@ -84,7 +84,7 @@ import { ref, watch, nextTick, onMounted } from 'vue'
 import WitnessAvatar from '@/components/common/WitnessAvatar.vue'
 
 /**
- * @import {PropType} from 'vue'
+ * @import {PropType, Ref} from 'vue'
  * @import {Witness} from '@/types.js'
  */
 const props = defineProps({
@@ -109,13 +109,13 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'send-message', 'close'])
 
-/** @type {import('vue').Ref<string>} */
+/** @type {Ref<string>} */
 const messageText = ref('')
 const messageSent = ref(false)
 const loading = ref(false)
-/** @type {import('vue').Ref<HTMLInputElement | null>} */
+/** @type {Ref<HTMLInputElement | null>} */
 const messageInput = ref(null)
-/** @type {import('vue').Ref<HTMLDivElement | null>} */
+/** @type {Ref<HTMLDivElement | null>} */
 const chatMessagesContainer = ref(null)
 
 const scrollToNewMessage = () => {

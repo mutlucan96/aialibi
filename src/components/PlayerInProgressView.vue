@@ -98,7 +98,6 @@ const router = useRouter()
 const isChatOpen = ref(false)
 const activeWitness = ref(null)
 const currentChatHistory = ref([])
-const chatModalRef = ref(null)
 const isAiResponding = ref(false)
 
 const isAccusationModalOpen = ref(false)

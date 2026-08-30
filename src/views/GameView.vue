@@ -25,6 +25,7 @@
         :image-limit="imageLimit"
         :remaining-images="remainingImages"
         :can-generate-images="canGenerateImages"
+        :is-limits-loaded="isLimitsLoaded"
         @generate-story="handleGenerateStory"
         @generate-images="handleGenerateImages"
         @start-game="handleStartGame"
@@ -108,6 +109,7 @@ const {
   remainingImages,
   canGenerateStory,
   canGenerateImages,
+  isLoaded: isLimitsLoaded,
 } = useLimits(currentUser)
 
 const storyGenerationSteps = [
@@ -195,7 +197,7 @@ function fetchGameData() {
  * @returns {Promise<void>}
  */
 async function handleGenerateStory(newSettings) {
-  if (!canGenerateStory.value) {
+  if (isLimitsLoaded.value && !canGenerateStory.value) {
     alert('Daily story generation limit reached. Please try again tomorrow.')
     return
   }
@@ -237,7 +239,7 @@ async function handleGenerateStory(newSettings) {
  */
 async function handleGenerateImages() {
   if (!witnesses.value || witnesses.value.length === 0) return
-  if (!canGenerateImages.value) {
+  if (isLimitsLoaded.value && !canGenerateImages.value) {
     alert('Daily image generation limit reached. Please try again tomorrow.')
     return
   }

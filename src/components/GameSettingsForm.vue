@@ -102,13 +102,14 @@
           ref="submitButton"
           type="submit"
           :loading="isGeneratingStory"
-          :disabled="isGeneratingStory || !canGenerateStory"
+          :disabled="isGeneratingStory || (isLimitsLoaded && !canGenerateStory)"
           color="primary"
         >
           {{ hasStoryGenerated ? 'Regenerate Story' : 'Generate Story' }}
         </v-btn>
 
         <v-chip
+          v-if="isLimitsLoaded"
           size="small"
           :color="canGenerateStory ? 'primary' : 'error'"
           variant="tonal"
@@ -171,7 +172,11 @@ const props = defineProps({
   },
   canGenerateStory: {
     type: Boolean,
-    default: true,
+    default: false,
+  },
+  isLimitsLoaded: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -208,7 +213,7 @@ watch(
  * Handles story generation form submission.
  */
 function onGenerateStory() {
-  if (!props.canGenerateStory) return
+  if (props.isLimitsLoaded && !props.canGenerateStory) return
   emit('generate-story', localGameSettings)
 }
 </script>

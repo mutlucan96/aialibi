@@ -1,7 +1,7 @@
 import { db } from '../config.js'
 
-export const DEFAULT_DAILY_STORY_LIMIT = 5
-export const DEFAULT_DAILY_IMAGE_LIMIT = 5
+export const DEFAULT_DAILY_STORY_LIMIT = 0
+export const DEFAULT_DAILY_IMAGE_LIMIT = 0
 
 /**
  * Gets the current UTC date string YYYY-MM-DD.
@@ -24,13 +24,13 @@ export async function getUserDailyLimit(uid, type) {
     const limits = limitsSnap.val() || {}
 
     // Check specific user overrides first
-    const specificUsers = limits.specific || limits.users || limits.overrides || {}
+    const specificUsers = limits['specific'] || limits['users'] || limits['overrides'] || {}
     if (uid && specificUsers[uid]) {
       const userLimitObj = specificUsers[uid]
       const userVal =
         type === 'story'
-          ? (userLimitObj.story ?? userLimitObj.storyLimit ?? userLimitObj.stories)
-          : (userLimitObj.image ?? userLimitObj.imageLimit ?? userLimitObj.images)
+          ? (userLimitObj['story'] ?? userLimitObj['storyLimit'] ?? userLimitObj['stories'])
+          : (userLimitObj['image'] ?? userLimitObj['imageLimit'] ?? userLimitObj['images'])
 
       if (typeof userVal === 'number' && !isNaN(userVal)) {
         return userVal
@@ -38,11 +38,11 @@ export async function getUserDailyLimit(uid, type) {
     }
 
     // Check global limits
-    const globalLimits = limits.global || {}
+    const globalLimits = limits['global'] || {}
     const globalVal =
       type === 'story'
-        ? (globalLimits.story ?? globalLimits.storyLimit ?? globalLimits.stories)
-        : (globalLimits.image ?? globalLimits.imageLimit ?? globalLimits.images)
+        ? (globalLimits['story'] ?? globalLimits['storyLimit'] ?? globalLimits['stories'])
+        : (globalLimits['image'] ?? globalLimits['imageLimit'] ?? globalLimits['images'])
 
     if (typeof globalVal === 'number' && !isNaN(globalVal)) {
       return globalVal

@@ -107,4 +107,30 @@
  * @property {string} reason - The reason for the ban.
  */
 
+/**
+ * @typedef {object} LimitConfig
+ * @property {number} [story] - Daily story limit.
+ * @property {number} [storyLimit] - Daily story limit alias.
+ * @property {number} [stories] - Daily story limit alias.
+ * @property {number} [image] - Daily image limit.
+ * @property {number} [imageLimit] - Daily image limit alias.
+ * @property {number} [images] - Daily image limit alias.
+ */
+
+/**
+ * @typedef {object} LimitsData
+ * @property {LimitConfig} [global] - Global daily limits.
+ * @property {Object.<string, LimitConfig>} [specific] - Specific user limits by UID.
+ * @property {Object.<string, LimitConfig>} [users] - Specific user limits by UID alias.
+ * @property {Object.<string, LimitConfig>} [overrides] - Specific user limits by UID alias.
+ */
+
+/**
+ * @typedef {object} DailyUsageData
+ * @property {number} [story] - Number of stories generated today.
+ * @property {number} [stories] - Story count alias.
+ * @property {number} [image] - Number of images generated today.
+ * @property {number} [images] - Image count alias.
+ */
+
 export {}

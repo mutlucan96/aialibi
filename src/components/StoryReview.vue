@@ -52,11 +52,15 @@
       please keep an eye on what is being discussed.</span
     >
   </v-alert>
-  <v-card absolute class="d-flex flex-wrap align-center justify-center pa-2 mt-2 ga-2" rounded="lg">
+  <v-card
+    absolute
+    class="d-flex flex-wrap align-center justify-center pa-2 mt-2 ga-2"
+    rounded="lg"
+  >
     <div v-if="!imagesGenerated" class="d-inline-flex align-center flex-wrap ga-2 mr-2">
       <v-btn
         @click="$emit('generate-images')"
-        :disabled="isGeneratingImages || !canGenerateImages"
+        :disabled="isGeneratingImages || (isLimitsLoaded && !canGenerateImages)"
         :loading="isGeneratingImages"
         size="large"
         color="secondary"
@@ -64,6 +68,7 @@
         Generate Images
       </v-btn>
       <v-chip
+        v-if="isLimitsLoaded"
         size="small"
         :color="canGenerateImages ? 'secondary' : 'error'"
         variant="tonal"
@@ -128,7 +133,11 @@ const props = defineProps({
   },
   canGenerateImages: {
     type: Boolean,
-    default: true,
+    default: false,
+  },
+  isLimitsLoaded: {
+    type: Boolean,
+    default: false,
   },
 })
 

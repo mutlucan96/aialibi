@@ -11,6 +11,7 @@
           :story-limit="storyLimit"
           :remaining-stories="remainingStories"
           :can-generate-story="canGenerateStory"
+          :is-limits-loaded="isLimitsLoaded"
           @generate-story="onGenerateStory"
           @open-presenter-window="$emit('open-presenter-window')"
           :loading-status-message="loadingStatusMessage"
@@ -30,6 +31,7 @@
           :image-limit="imageLimit"
           :remaining-images="remainingImages"
           :can-generate-images="canGenerateImages"
+          :is-limits-loaded="isLimitsLoaded"
           @generate-story="onGenerateStory"
           @generate-images="$emit('generate-images')"
           @start-game="$emit('start-game')"
@@ -141,7 +143,7 @@ defineProps({
   },
   canGenerateStory: {
     type: Boolean,
-    default: true,
+    default: false,
   },
   imageLimit: {
     type: Number,
@@ -153,7 +155,11 @@ defineProps({
   },
   canGenerateImages: {
     type: Boolean,
-    default: true,
+    default: false,
+  },
+  isLimitsLoaded: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -168,7 +174,6 @@ const emit = defineEmits([
   'finish-game',
   'delete-game',
   'remove-game',
-  'open-presenter-window',
 ])
 
 /**

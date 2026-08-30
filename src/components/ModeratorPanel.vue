@@ -5,8 +5,8 @@
       <div v-if="user" class="text-center">
         <p class="mb-2">Welcome!</p>
 
-        <!-- Daily Limits Info -->
-        <div class="d-flex justify-center flex-wrap ga-2 mb-4">
+        <!-- Daily Limits Info (Only displayed once loaded from database) -->
+        <div v-if="isLimitsLoaded" class="d-flex justify-center flex-wrap ga-2 mb-4">
           <v-chip
             size="small"
             :color="canGenerateStory ? 'primary' : 'error'"
@@ -72,6 +72,7 @@ const {
   remainingImages,
   canGenerateStory,
   canGenerateImages,
+  isLoaded: isLimitsLoaded,
 } = useLimits(user)
 
 /**

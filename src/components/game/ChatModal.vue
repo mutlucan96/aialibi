@@ -24,25 +24,28 @@
         </v-btn>
       </v-card-title>
 
-      <v-card-text
-        style="overflow-y: auto; flex-grow: 1; min-height: 200px"
-        ref="chatMessagesContainer"
-      >
-        <TransitionGroup name="slide-up" tag="div">
-          <div v-for="(message, index) in chatHistory" :key="message.id || index" class="mb-2">
-            <div :class="{ 'text-right': message.sender === 'player' }">
-              <div
-                class="chat-bubble"
-                :class="{
-                  'player-message': message.sender === 'player',
-                  'witness-message': message.sender !== 'player',
-                }"
-              >
-                {{ message.text }}
+      <v-card-text class="pa-0">
+        <div
+          ref="chatMessagesContainer"
+          class="pa-4"
+          style="overflow-y: auto; flex-grow: 1; min-height: 200px; max-height: 400px"
+        >
+          <TransitionGroup name="slide-up" tag="div">
+            <div v-for="(message, index) in chatHistory" :key="message.id || index" class="mb-2">
+              <div :class="{ 'text-right': message.sender === 'player' }">
+                <div
+                  class="chat-bubble"
+                  :class="{
+                    'player-message': message.sender === 'player',
+                    'witness-message': message.sender !== 'player',
+                  }"
+                >
+                  {{ message.text }}
+                </div>
               </div>
             </div>
-          </div>
-        </TransitionGroup>
+          </TransitionGroup>
+        </div>
       </v-card-text>
 
       <v-card-actions>
@@ -109,7 +112,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'send-message', 'close'])
 
-/** @type {Ref<string>} */
+/** @type {import('vue').Ref<string>} */
 const messageText = ref('')
 const messageSent = ref(false)
 const loading = ref(false)
@@ -120,9 +123,8 @@ const chatMessagesContainer = ref(null)
 
 const scrollToNewMessage = () => {
   nextTick(() => {
-    const container = chatMessagesContainer.value?.$el || chatMessagesContainer.value
-    if (container) {
-      container.scrollTop = container.scrollHeight
+    if (chatMessagesContainer.value) {
+      chatMessagesContainer.value.scrollTop = chatMessagesContainer.value.scrollHeight
     }
   })
 }

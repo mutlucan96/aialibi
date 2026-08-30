@@ -8,7 +8,16 @@
     <v-card class="d-flex flex-column">
       <v-card-title class="d-flex align-center">
         <WitnessAvatar :witness="witness" :size="48" custom-class="mr-3" />
-        <span>{{ witness.name }}</span>
+        <div class="d-flex flex-column justify-center">
+          <span>{{ witness.name }}</span>
+          <span
+            v-if="isAiResponding"
+            class="text-caption text-primary mt-1"
+            style="font-size: 0.75rem; line-height: 1"
+          >
+            Thinking...
+          </span>
+        </div>
         <v-spacer></v-spacer>
         <v-btn variant="text" icon @click="!loading && $emit('close')" :disabled="loading">
           <v-icon>mdi-close</v-icon>
@@ -19,19 +28,21 @@
         style="overflow-y: auto; flex-grow: 1; min-height: 200px"
         ref="chatMessagesContainer"
       >
-        <div v-for="(message, index) in chatHistory" :key="index" class="mb-2">
-          <div :class="{ 'text-right': message.sender === 'player' }">
-            <div
-              class="chat-bubble"
-              :class="{
-                'player-message': message.sender === 'player',
-                'witness-message': message.sender !== 'player',
-              }"
-            >
-              {{ message.text }}
+        <TransitionGroup name="slide-up" tag="div">
+          <div v-for="(message, index) in chatHistory" :key="message.id || index" class="mb-2">
+            <div :class="{ 'text-right': message.sender === 'player' }">
+              <div
+                class="chat-bubble"
+                :class="{
+                  'player-message': message.sender === 'player',
+                  'witness-message': message.sender !== 'player',
+                }"
+              >
+                {{ message.text }}
+              </div>
             </div>
           </div>
-        </div>
+        </TransitionGroup>
       </v-card-text>
 
       <v-card-actions>
@@ -47,11 +58,12 @@
         ></v-text-field>
         <v-btn
           v-if="!messageSent"
+          icon
           color="primary"
           @click="sendMessage"
           :disabled="!messageText.trim()"
         >
-          Send
+          <v-icon>mdi-send</v-icon>
         </v-btn>
         <v-btn
           v-else
@@ -101,7 +113,9 @@ const emit = defineEmits(['update:modelValue', 'send-message', 'close'])
 const messageText = ref('')
 const messageSent = ref(false)
 const loading = ref(false)
+/** @type {import('vue').Ref<HTMLInputElement | null>} */
 const messageInput = ref(null)
+/** @type {import('vue').Ref<HTMLDivElement | null>} */
 const chatMessagesContainer = ref(null)
 
 const scrollToNewMessage = () => {
@@ -170,5 +184,19 @@ const sendMessage = () => {
 .witness-message {
   background-color: #e0e0e0;
   color: black;
+}
+
+.slide-up-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.slide-up-enter-to {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>

@@ -401,8 +401,8 @@ async function handleOpenChat(witnessId) {
  */
 async function handleSendMessage(messageText) {
   currentChatHistory.value.push({ sender: 'player', text: messageText })
-  currentChatHistory.value.push({ sender: 'ai', text: 'Thinking...' })
   isAiResponding.value = true
+  let responseAdded = false
 
   await sendChatMessage(
     props.gameId,
@@ -410,10 +410,13 @@ async function handleSendMessage(messageText) {
     messageText,
     props.currentUser?.uid,
     (updatedAnswer) => {
-      if (
-        currentChatHistory.value.length > 0 &&
-        currentChatHistory.value[currentChatHistory.value.length - 1].sender === 'ai'
-      ) {
+      if (!responseAdded) {
+        currentChatHistory.value.push({
+          sender: 'ai',
+          text: updatedAnswer,
+        })
+        responseAdded = true
+      } else {
         currentChatHistory.value[currentChatHistory.value.length - 1].text = updatedAnswer
       }
     },

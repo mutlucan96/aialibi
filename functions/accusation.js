@@ -155,7 +155,7 @@ Analyze whether the Player's Proposed Motive accurately describes the Actual Mot
                       'True ONLY if the player genuinely explained the real motive/reason behind the crime. False if vague, incorrect, tautological, or a meta-phrase like "that is correct".',
                   },
                 },
-                required: ['reasoning', 'isMotiveCorrect'],
+                required: ['isMotiveCorrect'],
               },
             },
           })

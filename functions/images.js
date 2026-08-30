@@ -1,6 +1,7 @@
 import { onValueWritten } from 'firebase-functions/v2/database'
 import { randomUUID } from 'crypto'
 import { db, storage, ai, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.js'
+import { checkDailyLimit, incrementDailyUsage } from './utils/limits.js'
 
 /**
  * Generates a 2x2 spritesheet containing portrait avatars for all 4 witnesses in a single AI call.
@@ -106,9 +107,23 @@ export const onImageRequested = onValueWritten(
       const witnesses = game.witnesses
       const story = game.story || {}
       const settings = game.settings || {}
+      const creatorId = game.creatorId || requestData.creatorId || requestData.uid
 
       if (!witnesses) {
         await reqRef.update({ status: 'completed' })
+        return
+      }
+
+      const limitCheck = await checkDailyLimit(creatorId, 'image')
+      if (!limitCheck.allowed) {
+        const errorMsg = limitCheck.reason || 'Daily image generation limit reached.'
+        console.warn(
+          `Image generation blocked for user ${creatorId} in game ${gameId}: ${errorMsg}`,
+        )
+        await reqRef.update({
+          status: 'error',
+          error: errorMsg,
+        })
         return
       }
 
@@ -159,6 +174,9 @@ export const onImageRequested = onValueWritten(
 
       // Persist updated witnesses to Realtime Database
       await db.ref(`games/${gameId}/witnesses`).set(updatedWitnesses)
+
+      // Increment daily image usage
+      await incrementDailyUsage(creatorId, 'image')
 
       await reqRef.update({ status: 'completed' })
       console.log(`All ${updatedWitnesses.length} witnesses updated with spritesheet.`)

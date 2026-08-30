@@ -8,6 +8,9 @@
           :game-settings="gameSettings"
           :is-generating-story="isGeneratingStory"
           :has-story-generated="!!caseFile"
+          :story-limit="storyLimit"
+          :remaining-stories="remainingStories"
+          :can-generate-story="canGenerateStory"
           @generate-story="onGenerateStory"
           @open-presenter-window="$emit('open-presenter-window')"
           :loading-status-message="loadingStatusMessage"
@@ -24,6 +27,9 @@
           :game-settings="gameSettings"
           :is-generating-images="isGeneratingImages"
           :show-solution="showSolution"
+          :image-limit="imageLimit"
+          :remaining-images="remainingImages"
+          :can-generate-images="canGenerateImages"
           @generate-story="onGenerateStory"
           @generate-images="$emit('generate-images')"
           @start-game="$emit('start-game')"
@@ -122,8 +128,32 @@ defineProps({
     required: true,
   },
   currentUser: {
-    type: /** @type {PropType<currentUser | null>} */ (Object),
-    required: true,
+    type: /** @type {PropType<any>} */ (Object),
+    default: null,
+  },
+  storyLimit: {
+    type: Number,
+    default: 0,
+  },
+  remainingStories: {
+    type: Number,
+    default: 0,
+  },
+  canGenerateStory: {
+    type: Boolean,
+    default: true,
+  },
+  imageLimit: {
+    type: Number,
+    default: 0,
+  },
+  remainingImages: {
+    type: Number,
+    default: 0,
+  },
+  canGenerateImages: {
+    type: Boolean,
+    default: true,
   },
 })
 
@@ -137,11 +167,13 @@ const emit = defineEmits([
   'update:showSolution',
   'finish-game',
   'delete-game',
+  'remove-game',
+  'open-presenter-window',
 ])
 
 /**
  * Relays the generate-story event upwards.
- * @param {GameSettings} localGameSettings
+ * @param {GameSettings} localGameSettings - The updated settings.
  */
 function onGenerateStory(localGameSettings) {
   emit('generate-story', localGameSettings)

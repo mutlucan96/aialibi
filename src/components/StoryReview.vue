@@ -25,7 +25,13 @@
 
   <!-- Witness List -->
   <v-row class="pa-1" align="stretch">
-    <v-col v-for="(witness, index) in localWitnesses" :key="index" cols="12" md="6" class="pa-1 d-flex">
+    <v-col
+      v-for="(witness, index) in localWitnesses"
+      :key="index"
+      cols="12"
+      md="6"
+      class="pa-1 d-flex"
+    >
       <v-card class="w-100 pa-2 d-flex align-center" rounded="lg" elevation="1">
         <WitnessAvatar :witness="witness" :size="80" rounded="lg" />
         <div class="pl-4 flex-grow-1">
@@ -46,18 +52,34 @@
       please keep an eye on what is being discussed.</span
     >
   </v-alert>
-  <v-card absolute class="d-flex flex-wrap justify-center pa-2 mt-2" rounded="lg">
-    <v-btn
-      v-if="!imagesGenerated"
-      @click="$emit('generate-images')"
-      :disabled="isGeneratingImages"
-      :loading="isGeneratingImages"
-      size="large"
-      color="secondary"
-      class="mr-2"
-    >
-      Generate Images
-    </v-btn>
+  <v-card absolute class="d-flex flex-wrap align-center justify-center pa-2 mt-2 ga-2" rounded="lg">
+    <div v-if="!imagesGenerated" class="d-inline-flex align-center flex-wrap ga-2 mr-2">
+      <v-btn
+        @click="$emit('generate-images')"
+        :disabled="isGeneratingImages || !canGenerateImages"
+        :loading="isGeneratingImages"
+        size="large"
+        color="secondary"
+      >
+        Generate Images
+      </v-btn>
+      <v-chip
+        size="small"
+        :color="canGenerateImages ? 'secondary' : 'error'"
+        variant="tonal"
+        class="text-caption font-weight-medium"
+      >
+        <v-icon
+          start
+          :icon="canGenerateImages ? 'mdi-image-outline' : 'mdi-alert-circle-outline'"
+        ></v-icon>
+        {{
+          canGenerateImages
+            ? `${remainingImages} / ${imageLimit} images left today`
+            : 'Daily image limit reached'
+        }}
+      </v-chip>
+    </div>
     <v-btn @click="$emit('start-game')" color="primary" size="large"> Start Game </v-btn>
   </v-card>
 </template>
@@ -95,6 +117,18 @@ const props = defineProps({
     type: Boolean,
     required: false,
     default: false,
+  },
+  imageLimit: {
+    type: Number,
+    default: 0,
+  },
+  remainingImages: {
+    type: Number,
+    default: 0,
+  },
+  canGenerateImages: {
+    type: Boolean,
+    default: true,
   },
 })
 

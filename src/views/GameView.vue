@@ -19,6 +19,12 @@
         :witnesses="witnesses"
         :show-solution="showSolution"
         :loading-status-message="loadingStatusMessage"
+        :story-limit="storyLimit"
+        :remaining-stories="remainingStories"
+        :can-generate-story="canGenerateStory"
+        :image-limit="imageLimit"
+        :remaining-images="remainingImages"
+        :can-generate-images="canGenerateImages"
         @generate-story="handleGenerateStory"
         @generate-images="handleGenerateImages"
         @start-game="handleStartGame"
@@ -61,6 +67,7 @@ import { generateImages, generateStory } from '@/utils/ai.js'
 import { joinLobby, removeTeam } from '@/utils/lobby.js'
 import { finishGame, removeGame, startGame } from '@/utils/game-state.js'
 import { openPresenterWindow } from '@/utils/ui.js'
+import { useLimits } from '@/composables/useLimits.js'
 import router from '@/router/index.js'
 
 /**
@@ -93,6 +100,15 @@ const showSolution = ref(false) // For Race Mode
 
 const loadingStatusMessage = ref('')
 let statusInterval = null
+
+const {
+  storyLimit,
+  imageLimit,
+  remainingStories,
+  remainingImages,
+  canGenerateStory,
+  canGenerateImages,
+} = useLimits(currentUser)
 
 const storyGenerationSteps = [
   'Understanding story requirements...',
@@ -179,6 +195,11 @@ function fetchGameData() {
  * @returns {Promise<void>}
  */
 async function handleGenerateStory(newSettings) {
+  if (!canGenerateStory.value) {
+    alert('Daily story generation limit reached. Please try again tomorrow.')
+    return
+  }
+
   isGeneratingStory.value = true
   caseFile.value = null
   witnesses.value = []
@@ -211,10 +232,16 @@ async function handleGenerateStory(newSettings) {
 }
 
 /**
- *
+ * Handles portrait image generation for witnesses.
+ * @returns {Promise<void>}
  */
 async function handleGenerateImages() {
   if (!witnesses.value || witnesses.value.length === 0) return
+  if (!canGenerateImages.value) {
+    alert('Daily image generation limit reached. Please try again tomorrow.')
+    return
+  }
+
   isGeneratingImages.value = true
   try {
     witnesses.value = await generateImages(props.gameId, witnesses.value)
@@ -227,14 +254,14 @@ async function handleGenerateImages() {
 }
 
 /**
- *
+ * Starts the game.
  */
 async function handleStartGame() {
   await startGame(props.gameId, caseFile.value, witnesses.value, gameSettings, currentUser.value)
 }
 
 /**
- *
+ * Finishes the game.
  */
 async function handleFinishGame() {
   await finishGame(props.gameId)

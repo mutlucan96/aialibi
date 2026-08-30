@@ -34,8 +34,8 @@
             <div class="text-h4 font-weight-bold">{{ game.joinCode }}</div>
             <v-btn @click="$emit('open-presenter-window')" class="mr-2">Open Presenter View</v-btn>
             <v-dialog v-model="teamManagementDialog" max-width="500px">
-              <template v-slot:activator="{ props }">
-                <v-btn v-bind="props">Manage Teams</v-btn>
+              <template v-slot:activator="{ props: dialogProps }">
+                <v-btn v-bind="dialogProps">Manage Teams</v-btn>
               </template>
               <v-card>
                 <v-card-title>Joined Teams</v-card-title>
@@ -97,11 +97,35 @@
         label="Theme / Additional Info (optional)"
       ></v-textarea>
 
-      <div class="d-flex align-center">
-        <v-btn ref="submitButton" type="submit" :loading="isGeneratingStory" color="primary">
+      <div class="d-flex align-center flex-wrap ga-2 mt-2">
+        <v-btn
+          ref="submitButton"
+          type="submit"
+          :loading="isGeneratingStory"
+          :disabled="isGeneratingStory || !canGenerateStory"
+          color="primary"
+        >
           {{ hasStoryGenerated ? 'Regenerate Story' : 'Generate Story' }}
         </v-btn>
-        <span v-if="isGeneratingStory" class="ml-4 text-caption">{{ loadingStatusMessage }}</span>
+
+        <v-chip
+          size="small"
+          :color="canGenerateStory ? 'primary' : 'error'"
+          variant="tonal"
+          class="text-caption font-weight-medium"
+        >
+          <v-icon
+            start
+            :icon="canGenerateStory ? 'mdi-auto-fix' : 'mdi-alert-circle-outline'"
+          ></v-icon>
+          {{
+            canGenerateStory
+              ? `${remainingStories} / ${storyLimit} stories left today`
+              : 'Daily story limit reached'
+          }}
+        </v-chip>
+
+        <span v-if="isGeneratingStory" class="ml-2 text-caption">{{ loadingStatusMessage }}</span>
       </div>
     </v-form>
   </v-card>
@@ -137,6 +161,18 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  storyLimit: {
+    type: Number,
+    default: 0,
+  },
+  remainingStories: {
+    type: Number,
+    default: 0,
+  },
+  canGenerateStory: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['generate-story', 'open-presenter-window', 'remove-team'])
@@ -145,7 +181,7 @@ const emit = defineEmits(['generate-story', 'open-presenter-window', 'remove-tea
 const localGameSettings = reactive({ ...props.gameSettings })
 /** @type {Ref<boolean>} */
 const teamManagementDialog = ref(false)
-/** @type {Ref<HTMLElement | null>} */
+/** @type {Ref<any>} */
 const submitButton = ref(null)
 
 watch(
@@ -169,9 +205,10 @@ watch(
 )
 
 /**
- *
+ * Handles story generation form submission.
  */
 function onGenerateStory() {
+  if (!props.canGenerateStory) return
   emit('generate-story', localGameSettings)
 }
 </script>

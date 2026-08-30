@@ -3,7 +3,44 @@
     <v-card-title>Create a New Game</v-card-title>
     <v-card-text>
       <div v-if="user" class="text-center">
-        <p class="mb-4">Welcome!</p>
+        <p class="mb-2">Welcome!</p>
+
+        <!-- Daily Limits Info -->
+        <div class="d-flex justify-center flex-wrap ga-2 mb-4">
+          <v-chip
+            size="small"
+            :color="canGenerateStory ? 'primary' : 'error'"
+            variant="tonal"
+            class="text-caption font-weight-medium"
+          >
+            <v-icon
+              start
+              :icon="canGenerateStory ? 'mdi-auto-fix' : 'mdi-alert-circle-outline'"
+            ></v-icon>
+            {{
+              canGenerateStory
+                ? `${remainingStories} / ${storyLimit} stories today`
+                : 'Daily story limit reached'
+            }}
+          </v-chip>
+          <v-chip
+            size="small"
+            :color="canGenerateImages ? 'secondary' : 'error'"
+            variant="tonal"
+            class="text-caption font-weight-medium"
+          >
+            <v-icon
+              start
+              :icon="canGenerateImages ? 'mdi-image-outline' : 'mdi-alert-circle-outline'"
+            ></v-icon>
+            {{
+              canGenerateImages
+                ? `${remainingImages} / ${imageLimit} images today`
+                : 'Daily image limit reached'
+            }}
+          </v-chip>
+        </div>
+
         <v-btn :loading="isCreating" color="primary" block class="mb-2" @click="createNewGame">
           Create a New Game
         </v-btn>
@@ -22,10 +59,20 @@ import { useRouter } from 'vue-router'
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
 import { ref as dbRef, serverTimestamp, get, set } from 'firebase/database'
 import { auth, db } from '../firebase'
+import { useLimits } from '@/composables/useLimits.js'
 
 const isCreating = ref(false)
 const user = ref(null)
 const router = useRouter()
+
+const {
+  storyLimit,
+  imageLimit,
+  remainingStories,
+  remainingImages,
+  canGenerateStory,
+  canGenerateImages,
+} = useLimits(user)
 
 /**
  * @description Generates a random 4-digit integer code as a string.

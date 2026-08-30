@@ -1,5 +1,6 @@
 import { onValueWritten } from 'firebase-functions/v2/database'
 import { db, ai, DATABASE_INSTANCE, FUNCTIONS_REGION } from './config.js'
+import { checkDailyLimit, incrementDailyUsage } from './utils/limits.js'
 
 /**
  * RTDB Event Trigger: Generates a complete mystery case file based on settings via Google GenAI.
@@ -21,10 +22,28 @@ export const onStoryRequested = onValueWritten(
       return
     }
 
-    const settings = requestData.settings || {}
     const reqRef = db.ref(`games/${gameId}/storyRequest`)
 
     try {
+      const gameSnap = await db.ref(`games/${gameId}`).once('value')
+      const game = gameSnap.val() || {}
+      const creatorId = game.creatorId || requestData.creatorId || requestData.uid
+
+      const limitCheck = await checkDailyLimit(creatorId, 'story')
+      if (!limitCheck.allowed) {
+        const errorMsg = limitCheck.reason || 'Daily story generation limit reached.'
+        console.warn(
+          `Story generation blocked for user ${creatorId} in game ${gameId}: ${errorMsg}`,
+        )
+        await reqRef.update({
+          status: 'error',
+          error: errorMsg,
+        })
+        return
+      }
+
+      const settings = requestData.settings || {}
+
       const prompt = `
         You are a master detective story writer. Based on the following game settings, create a compelling mystery case file for English language learners.
 
@@ -132,6 +151,9 @@ export const onStoryRequested = onValueWritten(
         story: storyResponse,
         witnesses: witnessesWithIds,
       })
+
+      // Increment daily story usage
+      await incrementDailyUsage(creatorId, 'story')
 
       await reqRef.update({
         status: 'completed',

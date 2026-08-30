@@ -176,7 +176,7 @@ const sendMessage = () => {
 }
 
 .player-message {
-  background-color: #1976d2;
+  background-color: #9b5a00;
   color: white;
   margin-left: auto;
 }

@@ -34,30 +34,29 @@
       </template>
     </v-snackbar>
 
-    <!-- Winner Announcement Overlay -->
-    <v-overlay
-      v-model="isWinnerOverlayOpen"
-      class="align-center justify-center winner-announcement-overlay"
-      :scrim="latestWinner?.color || '#1976d2'"
-      :opacity="0.95"
-      persistent
-      z-index="9999"
-    >
-      <div v-if="latestWinner" class="text-center winner-content px-4">
-        <div class="text-h4 text-uppercase font-weight-black tracking-wide text-white mb-2 case-solved-badge">
-          🎉 Case Solved! 🎉
+    <!-- Winner Announcement Fullscreen Banner -->
+    <transition name="fade">
+      <div
+        v-if="isWinnerOverlayOpen && latestWinner"
+        class="winner-fullscreen-overlay"
+        :style="{ backgroundColor: latestWinner.color || '#1976d2' }"
+      >
+        <div class="text-center winner-text-content px-4">
+          <div class="text-h3 text-uppercase font-weight-black tracking-wide text-white mb-4 case-solved-badge">
+            🎉 CASE SOLVED! 🎉
+          </div>
+          <h1 class="text-h1 font-weight-black text-white mb-6 placement-text">
+            {{ getOrdinalWord(latestWinner.placement) }} Place
+          </h1>
+          <div class="winner-emoji mb-6">
+            {{ latestWinner.emoji }}
+          </div>
+          <p class="text-h2 font-weight-bold text-white team-name-text">
+            {{ latestWinner.teamName }}
+          </p>
         </div>
-        <h1 class="text-h1 font-weight-black text-white mb-2 placement-text">
-          {{ getOrdinalWord(latestWinner.placement) }}
-        </h1>
-        <div class="winner-emoji mb-2">
-          {{ latestWinner.emoji }}
-        </div>
-        <p class="text-h2 font-weight-bold text-white team-name-text">
-          {{ latestWinner.teamName }}
-        </p>
       </div>
-    </v-overlay>
+    </transition>
   </v-container>
 </template>
 
@@ -96,12 +95,51 @@ const snackbarTimeout = ref(10000)
 const latestWinner = ref(null)
 const isWinnerOverlayOpen = ref(false)
 let winnerTimeout = null
-const seenResultIds = new Set()
-let isInitialResultsLoad = true
+const seenWinnerIds = new Set()
+let isInitialSync = true
 
 const showSnackbar = (message) => {
   snackbarText.value = message
   snackbar.value = true
+}
+
+function getWinnersList(gameData) {
+  if (!gameData) return []
+  const list = []
+
+  // Check results object
+  if (gameData.results) {
+    Object.entries(gameData.results).forEach(([id, res]) => {
+      if (res) {
+        list.push({
+          id,
+          teamName: res.teamName || (gameData.teams && gameData.teams[id]?.name) || 'Unknown Team',
+          color: res.color || (gameData.teams && gameData.teams[id]?.color) || '#1976d2',
+          emoji: res.emoji || (gameData.teams && gameData.teams[id]?.emoji) || '🕵️',
+          placement: res.placement || 1,
+          finishTime: res.finishTime || 0,
+        })
+      }
+    })
+  }
+
+  // Also check teams with correctAccusation if not in results
+  if (gameData.teams) {
+    Object.entries(gameData.teams).forEach(([id, team]) => {
+      if (team && team.correctAccusation && !list.some((w) => w.id === id)) {
+        list.push({
+          id,
+          teamName: team.name || 'Unknown Team',
+          color: team.color || '#1976d2',
+          emoji: team.emoji || '🕵️',
+          placement: list.length + 1,
+          finishTime: Date.now(),
+        })
+      }
+    })
+  }
+
+  return list
 }
 
 const triggerWinnerCelebration = (winner) => {
@@ -117,12 +155,43 @@ const triggerWinnerCelebration = (winner) => {
   }, 6000)
 }
 
+function checkNewWinners(gameData) {
+  if (!gameData) return
+  const winners = getWinnersList(gameData)
+
+  if (isInitialSync) {
+    // If a winner finished very recently (within last 15 seconds), still celebrate them
+    const now = Date.now()
+    const recentWinner = winners.find(
+      (w) => w.finishTime && now - w.finishTime < 15000,
+    )
+
+    winners.forEach((w) => seenWinnerIds.add(w.id))
+    isInitialSync = false
+
+    if (recentWinner) {
+      triggerWinnerCelebration(recentWinner)
+    }
+    return
+  }
+
+  const newWinners = winners.filter((w) => !seenWinnerIds.has(w.id))
+  if (newWinners.length > 0) {
+    newWinners.forEach((w) => seenWinnerIds.add(w.id))
+    const latest = newWinners[newWinners.length - 1]
+    triggerWinnerCelebration(latest)
+  }
+}
+
 onMounted(() => {
   gameRef = dbRef(db, `games/${props.gameId}`)
   onValue(gameRef, (snapshot) => {
     const data = snapshot.val()
     game.value = data
     loading.value = false
+    if (data) {
+      checkNewWinners(data)
+    }
   })
 
   showSnackbar('Move this tab to an extended screen and press F11 for fullscreen.')
@@ -138,25 +207,10 @@ onUnmounted(() => {
 })
 
 watch(
-  () => game.value?.results,
-  (results) => {
-    if (!results) return
-
-    const resultEntries = Object.entries(results)
-
-    if (isInitialResultsLoad) {
-      // Register existing results on mount so stale results don't re-trigger
-      resultEntries.forEach(([id]) => seenResultIds.add(id))
-      isInitialResultsLoad = false
-      return
-    }
-
-    // Detect any newly added results in real time
-    const newResults = resultEntries.filter(([id]) => !seenResultIds.has(id))
-    if (newResults.length > 0) {
-      const [newId, newWinner] = newResults[0]
-      seenResultIds.add(newId)
-      triggerWinnerCelebration(newWinner)
+  () => game.value,
+  (newData) => {
+    if (newData) {
+      checkNewWinners(newData)
     }
   },
   { deep: true },
@@ -168,28 +222,33 @@ a {
   text-decoration: none;
 }
 
-.winner-announcement-overlay :deep(.v-overlay__content) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.winner-fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
-.winner-content {
+.winner-text-content {
   color: #fff;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+  text-shadow: 0 0 6px #000, 0 4px 24px rgba(0, 0, 0, 0.9);
   animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .winner-emoji {
-  font-size: 6rem;
+  font-size: 8rem;
   line-height: 1;
   animation: bounce 1s infinite alternate;
 }
 
 .case-solved-badge {
-  letter-spacing: 2px;
+  letter-spacing: 3px;
 }
 
 @keyframes popIn {
@@ -210,5 +269,15 @@ a {
   100% {
     transform: translateY(-15px);
   }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

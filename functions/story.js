@@ -44,8 +44,22 @@ export const onStoryRequested = onValueWritten(
 
       const settings = requestData.settings || {}
 
+      // Generate a random daytime hour during active hours (8:00 AM - 9:45 PM)
+      const hour = Math.floor(Math.random() * 14) + 8
+      const minute = ['00', '15', '30', '45'][Math.floor(Math.random() * 4)]
+      const ampm = hour >= 12 ? 'PM' : 'AM'
+      const displayHour = hour > 12 ? hour - 12 : hour
+      const incidentTime = `${displayHour}:${minute} ${ampm}`
+
+      // Random case identifier hash to shift the model's attention state
+      const caseCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+
       const prompt = `
-        You are a master detective story writer. Based on the following game settings, create a compelling mystery case file for English language learners.
+        You design investigative puzzle games based on the following game settings, create an original/unique and compelling mystery case file for English language learners (CEFR Level ${settings.languageLevel || 'B1'}).
+        Case Reference Code: #${caseCode}
+       
+        Avoid cliché mystery tropes and witness names. Vary the crime type.
+        Give witnesses non-stereotypical names, occupations and social dynamics.
 
         Game Settings:
         - CEFR Language Level: ${settings.languageLevel || 'B1'}
@@ -53,13 +67,20 @@ export const onStoryRequested = onValueWritten(
         - Duration: ${settings.timeLimit || 'unlimited'} minutes
         - Target Vocabulary to naturally weave into the case: ${settings.targetVocabulary || 'none'}
         - Specific Theme / Setting Request: ${settings.theme || 'none'}
+        - Time of the incident: Around ${incidentTime}
         
         Generate exactly 4 distinct witnesses. One of the witnesses MUST be the culprit.
         Ensure witness personalities contain rich details, relationships with other characters, and clues to discover during interrogation.
         Define a unified cartoonish / vector art style in the outfit description.
         
+        LANGUAGE & VOCABULARY RULES (CRITICAL):
+        - Strictly use clear, accessible ${settings.languageLevel || 'B1'} English.
+        - Use short, natural sentences.
+        - AVOID complex scientific words, obscure tools, botanical jargon, or overly dramatic literary language.
+        - An intermediate English student should understand every sentence without a dictionary.
+
         CRIME DESCRIPTION: A captivating description of the crime that was committed. Focus on the scene and what happened. Do NOT include witness introductions here as they have their own character cards. Also include some clues here.
-        KEY CLUE: A specific, tangible clue left at the scene (e.g. a distinctive fabric fiber, a specific footprint, an odd scent, a dropped ticket with a timestamp, a peculiar tool) that subtly points to the culprit.
+        KEY CLUE: One small, realistic piece of physical evidence left at the scene that connects to the culprit.
         WITNESSES (EXACTLY 4):
            - Each must have a distinct, memorable name and vivid occupation/role.
            - DESCRIPTION: A short, engaging 1-2 sentence public introduction (e.g., their job/role, connection to the scene, or why they are present) displayed on their witness card.
@@ -67,13 +88,17 @@ export const onStoryRequested = onValueWritten(
            - OUTFIT: Visual description for character portrait generation.
         CULPRIT: Exactly one of the 4 witnesses MUST be the culprit. The 'culprit' string MUST match that witness's 'name' exactly.
         MOTIVE: A clear, plausible reason why the culprit committed the crime.
-        Keep all English vocabulary accessible and suitable for ${settings.languageLevel || 'B1'} level.
+        At the end check the story is suitable for ${settings.languageLevel || 'B1'} level.
       `
 
       const response = await ai.models.generateContent({
         model: 'gemini-3.7-flash',
         contents: prompt,
         config: {
+          temperature: 1.2,
+          thinkingConfig: {
+            thinkingBudget: 512,
+          },
           responseMimeType: 'application/json',
           responseSchema: {
             type: 'OBJECT',

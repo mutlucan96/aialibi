@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 const props = defineProps({
   startTime: {
@@ -27,11 +27,15 @@ let intervalId = null
 let endTime = 0
 
 const calculateTimeLeft = () => {
+  if (!endTime) return
   const remaining = (endTime - Date.now()) / 1000
   timeLeft.value = Math.max(0, Math.floor(remaining))
   if (remaining <= 0) {
     emit('timer-up')
-    clearInterval(intervalId)
+    if (intervalId) {
+      clearInterval(intervalId)
+      intervalId = null
+    }
   }
 }
 
@@ -41,11 +45,25 @@ const formattedTime = computed(() => {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 })
 
-onMounted(() => {
+const startTimer = () => {
+  if (!props.startTime || !props.duration) return
   endTime = props.startTime + props.duration * 60 * 1000
   calculateTimeLeft()
-  intervalId = setInterval(calculateTimeLeft, 1000)
+  if (!intervalId) {
+    intervalId = setInterval(calculateTimeLeft, 1000)
+  }
+}
+
+onMounted(() => {
+  startTimer()
 })
+
+watch(
+  [() => props.startTime, () => props.duration],
+  () => {
+    startTimer()
+  },
+)
 
 onUnmounted(() => {
   if (intervalId) {

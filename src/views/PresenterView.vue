@@ -1,5 +1,5 @@
 <template>
-  <v-container class="fill-height">
+  <v-container fluid class="fill-height px-4 px-md-8">
     <template v-if="game">
       <PresenterLobby
         v-if="game.status === 'lobby'"
